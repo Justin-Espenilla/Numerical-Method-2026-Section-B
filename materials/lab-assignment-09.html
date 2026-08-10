@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab Assignment 9 — Normal Depth and the Order of a Method</title>
+<style>
+/* ============================================================
+   Numerical Methods Laboratory — shared stylesheet
+   White and blue. Code blocks remain dark. Print-friendly.
+   ============================================================ */
+
+:root {
+  --bg:        #ffffff;
+  --surface:   #ffffff;
+  --surface-2: #f2f6fb;
+  --surface-3: #e8f0f9;
+  --ink:       #10233a;
+  --ink-soft:  #3d5670;
+  --ink-faint: #6b8199;
+  --rule:      #d5e2f0;
+  --accent:    #0b5fa5;      /* primary blue */
+  --accent-dk: #08436f;
+  --accent-lt: #4a92d0;
+  --ok:        #14705c;
+  --warn:      #8a5b00;
+  --code-bg:   #0d1b2a;      /* black-blue: code stays dark */
+  --code-ink:  #e6edf5;
+  --shadow:    0 1px 2px rgba(16,35,58,.05), 0 6px 20px rgba(16,35,58,.07);
+  --mono: "Cascadia Code", "JetBrains Mono", Consolas, "SF Mono", Menlo, monospace;
+  --sans: "Segoe UI", Inter, system-ui, -apple-system, Roboto, sans-serif;
+  --serif: "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 24px 96px; }
+.wrap-wide { max-width: 1080px; margin: 0 auto; padding: 0 24px 96px; }
+
+/* ---------- masthead ---------- */
+.masthead {
+  border-bottom: 2px solid var(--accent);
+  background: var(--surface);
+  padding: 10px 0;
+  margin-bottom: 40px;
+}
+.masthead .wrap, .masthead .wrap-wide { padding-bottom: 0; }
+.crumbs {
+  font-size: 13px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-faint); display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+}
+.crumbs a { color: var(--accent); text-decoration: none; }
+.crumbs a:hover { text-decoration: underline; }
+
+/* ---------- titles ---------- */
+.eyebrow {
+  font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent); margin: 0 0 10px;
+}
+h1 {
+  font-family: var(--serif);
+  font-size: clamp(30px, 5vw, 43px);
+  line-height: 1.14; margin: 0 0 12px; letter-spacing: -.01em; font-weight: 700;
+  color: var(--ink);
+}
+h2 {
+  font-family: var(--serif);
+  font-size: clamp(23px, 3.2vw, 29px);
+  margin: 52px 0 14px; line-height: 1.2; color: var(--accent-dk);
+  padding-bottom: 8px; border-bottom: 1px solid var(--rule);
+}
+h3 { font-size: 19px; margin: 32px 0 10px; letter-spacing: -.005em; color: var(--ink); }
+h4 { font-size: 15px; margin: 24px 0 8px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .08em; }
+.lede { font-size: 19px; color: var(--ink-soft); line-height: 1.6; margin: 0 0 8px; }
+
+.meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 8px; }
+.chip {
+  font-size: 12.5px; font-weight: 600; letter-spacing: .04em;
+  padding: 4px 11px; border-radius: 3px;
+  background: var(--surface-2); color: var(--ink-soft); border: 1px solid var(--rule);
+}
+.chip.hot { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+hr.rule { border: 0; border-top: 1px solid var(--rule); margin: 44px 0; }
+
+/* ---------- narrative / case blocks ---------- */
+.story {
+  font-family: var(--serif);
+  font-size: 18.5px; line-height: 1.7;
+  background: var(--surface-2);
+  border-left: 3px solid var(--accent);
+  padding: 20px 24px; margin: 26px 0;
+  border-radius: 0 4px 4px 0;
+}
+.story p:first-child { margin-top: 0; }
+.story p:last-child { margin-bottom: 0; }
+.story .who {
+  font-family: var(--sans); font-size: 12.5px; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--accent); font-weight: 700; margin-bottom: 8px;
+}
+
+.callout {
+  border: 1px solid var(--rule); border-radius: 4px;
+  padding: 16px 20px; margin: 22px 0; background: var(--surface);
+}
+.callout .tag { font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+.callout.think { border-left: 3px solid var(--accent-lt); background: var(--surface-2); }
+.callout.think .tag { color: var(--accent); }
+.callout.trap { border-left: 3px solid var(--warn); }
+.callout.trap .tag { color: var(--warn); }
+.callout.key  { border-left: 3px solid var(--accent-dk); background: var(--surface-3); }
+.callout.key .tag { color: var(--accent-dk); }
+.callout p:first-of-type { margin-top: 0; }
+.callout p:last-child { margin-bottom: 0; }
+
+/* ---------- math ---------- */
+.math {
+  font-family: var(--serif); font-size: 20px; text-align: center;
+  padding: 18px 12px; margin: 20px 0; color: var(--ink);
+  background: var(--surface-2); border: 1px solid var(--rule);
+  border-radius: 4px; overflow-x: auto;
+}
+.frac { display: inline-block; vertical-align: middle; text-align: center; margin: 0 .25em; }
+.frac > span { display: block; padding: 0 .35em; }
+.frac .den { border-top: 1.5px solid currentColor; }
+.eqn-no { float: right; color: var(--ink-faint); font-family: var(--sans); font-size: 14px; }
+var, .v { font-family: var(--serif); font-style: italic; }
+
+/* ---------- code (stays dark) ---------- */
+pre {
+  background: var(--code-bg); color: var(--code-ink);
+  padding: 18px 20px; border-radius: 4px; overflow-x: auto;
+  font-family: var(--mono); font-size: 14px; line-height: 1.6;
+  margin: 18px 0; border: 1px solid #0a1622;
+}
+pre .c { color: #7e93a8; font-style: italic; }   /* comment  */
+pre .k { color: #7fb3ff; }                        /* keyword  */
+pre .s { color: #9fd39a; }                        /* string   */
+pre .n { color: #ffcf7a; }                        /* number   */
+pre .f { color: #8fd8ec; }                        /* function */
+code {
+  font-family: var(--mono); font-size: .9em;
+  background: var(--surface-2); padding: 2px 6px; border-radius: 3px;
+  border: 1px solid var(--rule); color: var(--accent-dk);
+}
+pre code { background: none; border: 0; padding: 0; font-size: inherit; color: inherit; }
+
+/* ---------- tables ---------- */
+table {
+  width: 100%; border-collapse: collapse; margin: 22px 0;
+  font-size: 15px; background: var(--surface);
+  border: 1px solid var(--rule);
+}
+th, td { padding: 10px 13px; text-align: left; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th {
+  background: var(--accent); color: #fff; font-size: 12.5px;
+  text-transform: uppercase; letter-spacing: .06em; font-weight: 700;
+}
+tbody tr:nth-child(even) { background: var(--surface-2); }
+tbody tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-family: var(--mono); font-size: 13.5px; }
+.table-scroll { overflow-x: auto; }
+
+/* ---------- lists ---------- */
+ul, ol { padding-left: 22px; }
+li { margin: 7px 0; }
+li::marker { color: var(--accent); }
+ol.steps { counter-reset: s; list-style: none; padding-left: 0; }
+ol.steps > li { counter-increment: s; position: relative; padding-left: 42px; margin: 16px 0; }
+ol.steps > li::before {
+  content: counter(s); position: absolute; left: 0; top: 1px;
+  width: 28px; height: 28px; border-radius: 3px;
+  background: var(--accent); color: #fff; font-weight: 700; font-size: 14px;
+  display: grid; place-items: center;
+}
+
+/* ---------- cards ---------- */
+.grid { display: grid; gap: 16px; margin: 24px 0; }
+.grid.two   { grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); }
+.grid.three { grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); }
+
+.card {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 4px;
+  border-top: 3px solid var(--accent);
+  padding: 18px 20px; box-shadow: var(--shadow);
+  text-decoration: none; color: inherit; display: block;
+}
+a.card:hover { border-color: var(--accent-lt); border-top-color: var(--accent-dk); background: var(--surface-2); }
+.card h3 { margin: 4px 0 6px; font-size: 17px; }
+.card p { margin: 0; font-size: 14.5px; color: var(--ink-soft); }
+.card .n { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 700; letter-spacing: .1em; }
+
+/* ---------- buttons ---------- */
+.btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 28px 0; }
+.btn {
+  display: inline-block; padding: 11px 20px; border-radius: 3px;
+  font-size: 15px; font-weight: 600; text-decoration: none;
+  background: var(--accent); color: #fff; border: 1px solid var(--accent);
+}
+.btn:hover { background: var(--accent-dk); border-color: var(--accent-dk); }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn.ghost:hover { background: var(--surface-2); color: var(--accent-dk); }
+
+/* ---------- checklist ---------- */
+.checklist { list-style: none; padding-left: 0; }
+.checklist li { padding-left: 30px; position: relative; }
+.checklist li::before {
+  content: ""; position: absolute; left: 0; top: 5px;
+  width: 15px; height: 15px; border: 2px solid var(--accent-lt); border-radius: 2px;
+}
+
+/* ---------- footer nav ---------- */
+.pagenav {
+  display: flex; justify-content: space-between; gap: 16px;
+  border-top: 1px solid var(--rule); margin-top: 56px; padding-top: 20px;
+  font-size: 15px;
+}
+.pagenav a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.pagenav a:hover { text-decoration: underline; }
+
+footer.site {
+  border-top: 1px solid var(--rule); margin-top: 40px; padding: 22px 0 60px;
+  color: var(--ink-faint); font-size: 13.5px; text-align: center;
+}
+
+a { color: var(--accent); }
+
+/* ---------- print ---------- */
+@media print {
+  :root { --surface-2:#f4f7fa; --shadow:none; }
+  body { font-size: 11pt; }
+  pre { background:#f2f5f8; color:#101c28; border:1px solid #c8d6e4; }
+  pre .c,pre .k,pre .s,pre .n,pre .f { color:#101c28; }
+  th { background:#e8f0f9; color:#10233a; }
+  .masthead, .pagenav, .btn-row { display: none; }
+  h2 { page-break-after: avoid; }
+  pre, table, .callout, .story { page-break-inside: avoid; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="wrap">
+    <div class="crumbs">
+      <a href="index.html">Numerical Methods</a> <span>/</span>
+      <a href="lab-lecture-09.html">Lab Lecture 9</a> <span>/</span>
+      <span>Assignment 9</span> <span>/</span>
+      <a href="grading.html">Grading</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<p class="eyebrow">Lab Assignment 9 &middot; 100 points</p>
+<h1>Normal Depth and the Order of a Method</h1>
+<p class="lede">Derive the finite-difference formulas from Taylor's expansion, measure the remainder against its
+theoretical bound, then use Newton–Raphson to solve a channel design problem and demonstrate the three ways it
+fails.</p>
+
+<div class="meta-row">
+  <span class="chip">Due: next laboratory session</span>
+  <span class="chip">Individual</span>
+  <span class="chip">Python 3</span>
+  <span class="chip hot">AI Prompt Log (Word) required</span>
+</div>
+
+<h2>Expected file deliverables</h2>
+<p>Submit one ZIP archive named <code>lab09_&lt;surname&gt;.zip</code> containing exactly these items:</p>
+<div class="table-scroll">
+<table>
+  <thead><tr><th>#</th><th>File name</th><th>Format</th><th>Contents</th></tr></thead>
+  <tbody>
+    <tr><td class="num">1</td><td><code>lab09_&lt;surname&gt;.py</code></td><td>.py</td><td>All code, runnable top to bottom.</td></tr>
+    <tr><td class="num">2</td><td><code>lab09_report_&lt;surname&gt;.pdf</code></td><td>.pdf</td><td><a href="Lab-Report-Template.docx">Lab Report Template</a>, maximum 7 pages. Hand derivations must be legible.</td></tr>
+    <tr><td class="num">3</td><td><code>lab09_ai_prompts_&lt;surname&gt;.docx</code></td><td>.docx (Word)</td><td>Every prompt, word for word, in the <a href="AI-Prompt-Log-Template.docx">AI Prompt Log Template</a>.</td></tr>
+    <tr><td class="num">4</td><td><code>figures/</code></td><td>.png</td><td>Truncation-error plot, convergence plot, depth–discharge curve, divergence illustration.</td></tr>
+    <tr><td class="num">5</td><td><code>lab09_output_&lt;surname&gt;.txt</code></td><td>.txt</td><td>Console output captured as the program ran.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<hr class="rule">
+
+<h2>Part A — Derivation and the remainder <span class="chip">25 pts</span></h2>
+
+<ol class="steps">
+  <li><strong>A.1</strong> Derive, by hand and shown in the report, the forward, backward and centred first
+  derivative formulas and the centred second derivative formula, stating the leading error term of each. Marks
+  are for the derivation, not the result.</li>
+
+  <li><strong>A.2</strong> Derive the three-point forward formula
+  (&minus;3<span class="v">f</span><sub>0</sub> + 4<span class="v">f</span><sub>1</sub> &minus; <span class="v">f</span><sub>2</sub>)/2<span class="v">h</span>
+  and prove it is O(<span class="v">h</span><sup>2</sup>). This is the endpoint formula used since Lab 1.</li>
+
+  <li><strong>A.3</strong> For <span class="v">f</span>(<span class="v">x</span>) = <span class="v">e</span><sup><span class="v">x</span>/2</sup>sin&nbsp;<span class="v">x</span>
+  expanded about <span class="v">x</span> = 1.0, tabulate the approximation to
+  <span class="v">f</span>(1.3) using 1, 2, 3, 4 and 5 terms, with the true error of each.</li>
+
+  <li><strong>A.4</strong> For each row of A.3, compute the theoretical remainder bound
+  |<span class="v">f</span><sup>(<span class="v">n</span>+1)</sup>|<sub>max</sub><span class="v">h</span><sup><span class="v">n</span>+1</sup>/(<span class="v">n</span>+1)!
+  over the interval, and confirm the actual error never exceeds it. Present bound and actual side by side.</li>
+
+  <li><strong>A.5</strong> Repeat A.3 with <span class="v">h</span> = 0.6 instead of 0.3 and confirm that each
+  term's error grows by the factor its order predicts.</li>
+</ol>
+
+<h2>Part B — Normal depth by Newton–Raphson <span class="chip">30 pts</span></h2>
+
+<p>Design a trapezoidal drainage channel: base width <span class="v">b</span> = 3.0 m, side slopes
+<span class="v">z</span> = 2, Manning's <span class="v">n</span> = 0.025, bed slope
+<span class="v">S</span> = 0.001, design discharge <span class="v">Q</span> = 15 m&sup3;/s.</p>
+
+<ol class="steps">
+  <li><strong>B.1</strong> Implement <code>newton(f, fprime, x0, es, max_iter)</code> returning
+  <code>(root, iterations, ea, history)</code>, with a guard against a vanishing derivative and an iteration
+  cap.</li>
+
+  <li><strong>B.2</strong> Solve for the normal depth from <span class="v">y</span><sub>0</sub> = 1.0 m.
+  Reproduce the iteration table of the lecture: <span class="v">y<sub>i</sub></span>,
+  <span class="v">f</span>(<span class="v">y<sub>i</sub></span>),
+  <span class="v">f&prime;</span>(<span class="v">y<sub>i</sub></span>),
+  <span class="v">y</span><sub><span class="v">i</span>+1</sub> and &epsilon;<sub>a</sub>. Report the depth,
+  area, hydraulic radius and mean velocity.</li>
+
+  <li><strong>B.3</strong> Demonstrate quadratic convergence. Tabulate
+  log<sub>10</sub>|&epsilon;<sub>t</sub>| at each iteration and show that it approximately doubles. State the
+  observed order by fitting log|<span class="v">e</span><sub><span class="v">i</span>+1</sub>| against
+  log|<span class="v">e<sub>i</sub></span>|; the slope should be near 2.</li>
+
+  <li><strong>B.4</strong> Solve the same problem by bisection on the bracket [0.1, 10] m to the same tolerance.
+  Report the iteration count for both methods and the ratio. State the trade-off in one sentence.</li>
+
+  <li><strong>B.5</strong> Derive <span class="v">f&prime;</span>(<span class="v">y</span>) analytically by hand
+  and implement it. Compare iterations, runtime and final depth against the numerical-derivative version.</li>
+
+  <li><strong>B.6</strong> Produce a design chart: normal depth against discharge for
+  <span class="v">Q</span> from 1 to 50 m&sup3;/s. Mark the design point. State the depth at which the channel
+  would overtop a 2.5 m deep section and the discharge that causes it.</li>
+</ol>
+
+<h2>Part C — Making it fail <span class="chip">25 pts</span></h2>
+
+<ol class="steps">
+  <li><strong>C.1</strong> Start Newton from <span class="v">y</span><sub>0</sub> = 0.01 m and record what
+  happens. Report the iterates and explain the behaviour in terms of the derivative near
+  <span class="v">y</span> = 0.</li>
+
+  <li><strong>C.2</strong> Find a starting value from which the method converges to a physically meaningless
+  root, and report both the starting value and the root. State how an engineer would detect this in practice.</li>
+
+  <li><strong>C.3</strong> Apply Newton to
+  <span class="v">g</span>(<span class="v">x</span>) = <span class="v">x</span><sup>3</sup> &minus; 2<span class="v">x</span> + 2
+  from <span class="v">x</span><sub>0</sub> = 0. Report the first ten iterates and identify the cycle. Explain
+  why a Taylor argument does not forbid this.</li>
+
+  <li><strong>C.4</strong> Implement a safeguarded solver: attempt a Newton step; if it leaves the bracket or
+  fails to reduce |<span class="v">f</span>|, take a bisection step instead. Demonstrate that it solves all three
+  cases above. Report iteration counts against plain Newton where both succeed.</li>
+</ol>
+
+<div class="callout key">
+  <span class="tag">The point of Part C</span>
+  <p>Fast methods that occasionally fail and safe methods that are always slow are both unacceptable in
+  production code. Every professional root-finder is a hybrid. Building one is the most transferable thing in
+  this assignment.</p>
+</div>
+
+<h2>Part D — AI Prompt Log <span class="chip">20 pts</span></h2>
+
+<div class="callout key">
+  <span class="tag">Required prompt experiment — the unguarded solver</span>
+  <p>Send this prompt, word for word:</p>
+  <pre style="margin:10px 0"><code>write newton raphson method in python to find normal depth in an open channel</code></pre>
+  <p>Then, in the log:</p>
+  <ol style="margin:8px 0 0">
+    <li>Does the returned code guard against a zero derivative? Does it cap the iterations? Quote the lines, or
+    state that they are absent.</li>
+    <li>Run it from <span class="v">y</span><sub>0</sub> = 0.01 and record the outcome exactly — including any
+    exception traceback.</li>
+    <li>Check its hydraulics, not just its arithmetic: is the wetted perimeter
+    <span class="v">b</span> + 2<span class="v">y</span>&radic;(1+<span class="v">z</span><sup>2</sup>)?
+    Is <span class="v">R</span> = <span class="v">A</span>/<span class="v">P</span>? Is the exponent 2/3 and not
+    3/2? Report every discrepancy with the corrected line.</li>
+    <li>Write an improved prompt specifying the channel geometry, the guards, the stopping criterion and the
+    returned history. Compare the two answers.</li>
+    <li>Name one defect that remains in the improved answer.</li>
+  </ol>
+  <p style="margin-top:10px">Note for this assignment in particular: an AI error in the <em>hydraulics</em> is
+  far more dangerous than an error in the <em>numerics</em>, because the code still runs and still converges —
+  to the wrong depth. Say in two sentences how you would catch such an error on a real project.</p>
+</div>
+
+<h2>Grade breakdown</h2>
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Component</th><th class="num">Pts</th><th>Full marks require</th></tr></thead>
+  <tbody>
+    <tr><td>A — Derivation</td><td class="num">25</td><td>Four formulas derived by hand with leading error terms, remainder bound verified numerically.</td></tr>
+    <tr><td>B — Normal depth</td><td class="num">30</td><td>Iteration table, order measured near 2, bisection comparison, analytical derivative, design chart.</td></tr>
+    <tr><td>C — Failure modes</td><td class="num">25</td><td>All three failures reproduced with iterates shown, safeguarded hybrid built and demonstrated.</td></tr>
+    <tr><td>D — AI Prompt Log</td><td class="num">20</td><td>Guards audited, hydraulics checked term by term, improved prompt compared, remaining defect named.</td></tr>
+    <tr><td><strong>Total</strong></td><td class="num"><strong>100</strong></td><td>&minus;5 missing console output &middot; &minus;10 code that does not run &middot; &minus;10 per day late.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="pagenav">
+  <span><a href="lab-lecture-09.html">&larr; Lab Lecture 9</a></span>
+  <span><a href="lab-lecture-10.html">Lab Lecture 10 &rarr;</a></span>
+</div>
+
+<footer class="site">Numerical Methods Laboratory &middot; Lab Assignment 9 &middot; Prepared by Engr. Escranda</footer>
+</div>
+</body>
+</html>

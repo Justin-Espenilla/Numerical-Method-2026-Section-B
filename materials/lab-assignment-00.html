@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab Assignment 0 — Setting Up Your Platform</title>
+<style>
+/* ============================================================
+   Numerical Methods Laboratory — shared stylesheet
+   White and blue. Code blocks remain dark. Print-friendly.
+   ============================================================ */
+
+:root {
+  --bg:        #ffffff;
+  --surface:   #ffffff;
+  --surface-2: #f2f6fb;
+  --surface-3: #e8f0f9;
+  --ink:       #10233a;
+  --ink-soft:  #3d5670;
+  --ink-faint: #6b8199;
+  --rule:      #d5e2f0;
+  --accent:    #0b5fa5;      /* primary blue */
+  --accent-dk: #08436f;
+  --accent-lt: #4a92d0;
+  --ok:        #14705c;
+  --warn:      #8a5b00;
+  --code-bg:   #0d1b2a;      /* black-blue: code stays dark */
+  --code-ink:  #e6edf5;
+  --shadow:    0 1px 2px rgba(16,35,58,.05), 0 6px 20px rgba(16,35,58,.07);
+  --mono: "Cascadia Code", "JetBrains Mono", Consolas, "SF Mono", Menlo, monospace;
+  --sans: "Segoe UI", Inter, system-ui, -apple-system, Roboto, sans-serif;
+  --serif: "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 24px 96px; }
+.wrap-wide { max-width: 1080px; margin: 0 auto; padding: 0 24px 96px; }
+
+/* ---------- masthead ---------- */
+.masthead {
+  border-bottom: 2px solid var(--accent);
+  background: var(--surface);
+  padding: 10px 0;
+  margin-bottom: 40px;
+}
+.masthead .wrap, .masthead .wrap-wide { padding-bottom: 0; }
+.crumbs {
+  font-size: 13px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-faint); display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+}
+.crumbs a { color: var(--accent); text-decoration: none; }
+.crumbs a:hover { text-decoration: underline; }
+
+/* ---------- titles ---------- */
+.eyebrow {
+  font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent); margin: 0 0 10px;
+}
+h1 {
+  font-family: var(--serif);
+  font-size: clamp(30px, 5vw, 43px);
+  line-height: 1.14; margin: 0 0 12px; letter-spacing: -.01em; font-weight: 700;
+  color: var(--ink);
+}
+h2 {
+  font-family: var(--serif);
+  font-size: clamp(23px, 3.2vw, 29px);
+  margin: 52px 0 14px; line-height: 1.2; color: var(--accent-dk);
+  padding-bottom: 8px; border-bottom: 1px solid var(--rule);
+}
+h3 { font-size: 19px; margin: 32px 0 10px; letter-spacing: -.005em; color: var(--ink); }
+h4 { font-size: 15px; margin: 24px 0 8px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .08em; }
+.lede { font-size: 19px; color: var(--ink-soft); line-height: 1.6; margin: 0 0 8px; }
+
+.meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 8px; }
+.chip {
+  font-size: 12.5px; font-weight: 600; letter-spacing: .04em;
+  padding: 4px 11px; border-radius: 3px;
+  background: var(--surface-2); color: var(--ink-soft); border: 1px solid var(--rule);
+}
+.chip.hot { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+hr.rule { border: 0; border-top: 1px solid var(--rule); margin: 44px 0; }
+
+/* ---------- narrative / case blocks ---------- */
+.story {
+  font-family: var(--serif);
+  font-size: 18.5px; line-height: 1.7;
+  background: var(--surface-2);
+  border-left: 3px solid var(--accent);
+  padding: 20px 24px; margin: 26px 0;
+  border-radius: 0 4px 4px 0;
+}
+.story p:first-child { margin-top: 0; }
+.story p:last-child { margin-bottom: 0; }
+.story .who {
+  font-family: var(--sans); font-size: 12.5px; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--accent); font-weight: 700; margin-bottom: 8px;
+}
+
+.callout {
+  border: 1px solid var(--rule); border-radius: 4px;
+  padding: 16px 20px; margin: 22px 0; background: var(--surface);
+}
+.callout .tag { font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+.callout.think { border-left: 3px solid var(--accent-lt); background: var(--surface-2); }
+.callout.think .tag { color: var(--accent); }
+.callout.trap { border-left: 3px solid var(--warn); }
+.callout.trap .tag { color: var(--warn); }
+.callout.key  { border-left: 3px solid var(--accent-dk); background: var(--surface-3); }
+.callout.key .tag { color: var(--accent-dk); }
+.callout p:first-of-type { margin-top: 0; }
+.callout p:last-child { margin-bottom: 0; }
+
+/* ---------- math ---------- */
+.math {
+  font-family: var(--serif); font-size: 20px; text-align: center;
+  padding: 18px 12px; margin: 20px 0; color: var(--ink);
+  background: var(--surface-2); border: 1px solid var(--rule);
+  border-radius: 4px; overflow-x: auto;
+}
+.frac { display: inline-block; vertical-align: middle; text-align: center; margin: 0 .25em; }
+.frac > span { display: block; padding: 0 .35em; }
+.frac .den { border-top: 1.5px solid currentColor; }
+.eqn-no { float: right; color: var(--ink-faint); font-family: var(--sans); font-size: 14px; }
+var, .v { font-family: var(--serif); font-style: italic; }
+
+/* ---------- code (stays dark) ---------- */
+pre {
+  background: var(--code-bg); color: var(--code-ink);
+  padding: 18px 20px; border-radius: 4px; overflow-x: auto;
+  font-family: var(--mono); font-size: 14px; line-height: 1.6;
+  margin: 18px 0; border: 1px solid #0a1622;
+}
+pre .c { color: #7e93a8; font-style: italic; }   /* comment  */
+pre .k { color: #7fb3ff; }                        /* keyword  */
+pre .s { color: #9fd39a; }                        /* string   */
+pre .n { color: #ffcf7a; }                        /* number   */
+pre .f { color: #8fd8ec; }                        /* function */
+code {
+  font-family: var(--mono); font-size: .9em;
+  background: var(--surface-2); padding: 2px 6px; border-radius: 3px;
+  border: 1px solid var(--rule); color: var(--accent-dk);
+}
+pre code { background: none; border: 0; padding: 0; font-size: inherit; color: inherit; }
+
+/* ---------- tables ---------- */
+table {
+  width: 100%; border-collapse: collapse; margin: 22px 0;
+  font-size: 15px; background: var(--surface);
+  border: 1px solid var(--rule);
+}
+th, td { padding: 10px 13px; text-align: left; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th {
+  background: var(--accent); color: #fff; font-size: 12.5px;
+  text-transform: uppercase; letter-spacing: .06em; font-weight: 700;
+}
+tbody tr:nth-child(even) { background: var(--surface-2); }
+tbody tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-family: var(--mono); font-size: 13.5px; }
+.table-scroll { overflow-x: auto; }
+
+/* ---------- lists ---------- */
+ul, ol { padding-left: 22px; }
+li { margin: 7px 0; }
+li::marker { color: var(--accent); }
+ol.steps { counter-reset: s; list-style: none; padding-left: 0; }
+ol.steps > li { counter-increment: s; position: relative; padding-left: 42px; margin: 16px 0; }
+ol.steps > li::before {
+  content: counter(s); position: absolute; left: 0; top: 1px;
+  width: 28px; height: 28px; border-radius: 3px;
+  background: var(--accent); color: #fff; font-weight: 700; font-size: 14px;
+  display: grid; place-items: center;
+}
+
+/* ---------- cards ---------- */
+.grid { display: grid; gap: 16px; margin: 24px 0; }
+.grid.two   { grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); }
+.grid.three { grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); }
+
+.card {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 4px;
+  border-top: 3px solid var(--accent);
+  padding: 18px 20px; box-shadow: var(--shadow);
+  text-decoration: none; color: inherit; display: block;
+}
+a.card:hover { border-color: var(--accent-lt); border-top-color: var(--accent-dk); background: var(--surface-2); }
+.card h3 { margin: 4px 0 6px; font-size: 17px; }
+.card p { margin: 0; font-size: 14.5px; color: var(--ink-soft); }
+.card .n { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 700; letter-spacing: .1em; }
+
+/* ---------- buttons ---------- */
+.btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 28px 0; }
+.btn {
+  display: inline-block; padding: 11px 20px; border-radius: 3px;
+  font-size: 15px; font-weight: 600; text-decoration: none;
+  background: var(--accent); color: #fff; border: 1px solid var(--accent);
+}
+.btn:hover { background: var(--accent-dk); border-color: var(--accent-dk); }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn.ghost:hover { background: var(--surface-2); color: var(--accent-dk); }
+
+/* ---------- checklist ---------- */
+.checklist { list-style: none; padding-left: 0; }
+.checklist li { padding-left: 30px; position: relative; }
+.checklist li::before {
+  content: ""; position: absolute; left: 0; top: 5px;
+  width: 15px; height: 15px; border: 2px solid var(--accent-lt); border-radius: 2px;
+}
+
+/* ---------- footer nav ---------- */
+.pagenav {
+  display: flex; justify-content: space-between; gap: 16px;
+  border-top: 1px solid var(--rule); margin-top: 56px; padding-top: 20px;
+  font-size: 15px;
+}
+.pagenav a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.pagenav a:hover { text-decoration: underline; }
+
+footer.site {
+  border-top: 1px solid var(--rule); margin-top: 40px; padding: 22px 0 60px;
+  color: var(--ink-faint); font-size: 13.5px; text-align: center;
+}
+
+a { color: var(--accent); }
+
+/* ---------- print ---------- */
+@media print {
+  :root { --surface-2:#f4f7fa; --shadow:none; }
+  body { font-size: 11pt; }
+  pre { background:#f2f5f8; color:#101c28; border:1px solid #c8d6e4; }
+  pre .c,pre .k,pre .s,pre .n,pre .f { color:#101c28; }
+  th { background:#e8f0f9; color:#10233a; }
+  .masthead, .pagenav, .btn-row { display: none; }
+  h2 { page-break-after: avoid; }
+  pre, table, .callout, .story { page-break-inside: avoid; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="wrap">
+    <div class="crumbs">
+      <a href="index.html">Numerical Methods</a> <span>/</span>
+      <span>Lab Assignment 0</span> <span>/</span>
+      <a href="grading.html">Grading</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<p class="eyebrow">Lab Assignment 0 &middot; Pass / fail &middot; Prerequisite</p>
+<h1>Setting Up Your Platform</h1>
+<p class="lede">The goal of this assignment is to establish the platform you will use for every laboratory in
+this course. The language of choice is <strong>Python</strong>. Nothing here is difficult, but nothing later
+works until it is done.</p>
+
+<div class="meta-row">
+  <span class="chip hot">Due before Laboratory 1</span>
+  <span class="chip">Pass / fail</span>
+  <span class="chip">Individual</span>
+  <span class="chip">Allow two hours</span>
+</div>
+
+<div class="callout trap">
+  <span class="tag">Why this is a prerequisite, not a suggestion</span>
+  <p>Assignment 1 is submitted as running Python code. A student who arrives at Laboratory 1 without a working
+  installation spends that session installing software instead of learning numerical methods, and then submits
+  late. <strong>Assignment 1 will not be accepted from anyone who has not passed Assignment 0.</strong></p>
+</div>
+
+<h2>Expected file deliverables</h2>
+
+<p>Submit one ZIP archive named <code>lab00_&lt;surname&gt;.zip</code> containing exactly these items:</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>#</th><th>File name</th><th>Format</th><th>Contents</th></tr></thead>
+  <tbody>
+    <tr><td class="num">1</td><td><code>lab00_setup_&lt;surname&gt;.pdf</code></td><td>.pdf</td>
+        <td>Your evidence document: the five screenshots listed in Part E, each captioned.</td></tr>
+    <tr><td class="num">2</td><td><code>lab00_check_&lt;surname&gt;.py</code></td><td>.py</td>
+        <td>The verification program from Part D, with your name and student number filled in at the top.</td></tr>
+    <tr><td class="num">3</td><td><code>lab00_output_&lt;surname&gt;.txt</code></td><td>.txt</td>
+        <td>The console output produced when you ran it.</td></tr>
+    <tr><td class="num">4</td><td><code>figures/lab00_check.png</code></td><td>.png</td>
+        <td>The figure the program writes. If this file exists, Matplotlib is installed correctly.</td></tr>
+    <tr><td class="num">5</td><td><code>lab00_accounts_&lt;surname&gt;.txt</code></td><td>.txt</td>
+        <td>Three lines: your GitHub username, the AI assistants you registered for, and the repository URL from Part C.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<hr class="rule">
+
+<h2>Part A — Install Python and Visual Studio Code <span class="chip">Required</span></h2>
+
+<p>Work through both videos in order. <strong>Do not skip either one, and follow them step by step.</strong>
+They cover the two things that go wrong most often: the PATH setting during installation, and telling VS Code
+which interpreter to use.</p>
+
+<div class="grid two">
+  <div class="card">
+    <span class="n">VIDEO 1</span>
+    <h3>Installing Python</h3>
+    <p style="word-break:break-all;margin-bottom:10px">
+      <a href="https://www.youtube.com/watch?v=1W0hL6_uX9A" target="_blank" rel="noopener">
+        https://www.youtube.com/watch?v=1W0hL6_uX9A</a></p>
+    <p>Follow it step by step. Do not skip ahead.</p>
+  </div>
+  <div class="card">
+    <span class="n">VIDEO 2</span>
+    <h3>Installing Visual Studio Code</h3>
+    <p style="word-break:break-all;margin-bottom:10px">
+      <a href="https://www.youtube.com/watch?v=ynHFZkfPAb0" target="_blank" rel="noopener">
+        https://www.youtube.com/watch?v=ynHFZkfPAb0</a></p>
+    <p>Follow it step by step. Do not skip ahead.</p>
+  </div>
+</div>
+
+<div class="callout trap">
+  <span class="tag">The one step everyone gets wrong</span>
+  <p>On the very first screen of the Python installer there is a tick box reading
+  <strong>"Add python.exe to PATH"</strong>. Tick it <em>before</em> pressing Install. If you miss it, the
+  <code>python</code> command will not be recognised in the terminal and you will have to uninstall and start
+  again. This single box is the cause of most first-week problems.</p>
+</div>
+
+<h3>A.1 Confirm Python is installed</h3>
+<p>Open a terminal — in VS Code, <em>Terminal &rarr; New Terminal</em> — and type:</p>
+
+<pre><code>python --version</code></pre>
+
+<p>You should see something like <code>Python 3.12.6</code>. Any version 3.11 or later is fine. If you instead
+see "python is not recognised", the PATH box was missed: uninstall Python and repeat Video 1.</p>
+
+<h3>A.2 Confirm VS Code can run a file</h3>
+<p>Create a file called <code>hello.py</code>, type the line below, save it, and press the &#9654; Run button.</p>
+
+<pre><code><span class="k">print</span>(<span class="s">"Python is working"</span>)</code></pre>
+
+<p>If VS Code asks you to select an interpreter, choose the Python 3 you just installed. If the message appears
+in the terminal, Part A is complete.</p>
+
+<h2>Part B — Create AI assistant accounts <span class="chip">Required</span></h2>
+
+<p>This course permits the use of AI assistants and grades how well you use them. You therefore need at least
+one account, and you are encouraged to hold two so that you can compare answers.</p>
+
+<ol class="steps">
+  <li>Register for <strong>at least two</strong> of the following: ChatGPT, Claude, DeepSeek, Gemini, or
+  GitHub Copilot. The free tier of any of them is sufficient for every assignment in this course.</li>
+  <li>Send each of them the same simple question — for example, <em>"what is the trapezoidal rule?"</em> — and
+  confirm you can copy the answer out as selectable text. You will need to paste prompts and answers into a
+  Word document all semester, so screenshots alone will not do.</li>
+  <li>Record which assistants you registered for in <code>lab00_accounts_&lt;surname&gt;.txt</code>.</li>
+</ol>
+
+<div class="callout key">
+  <span class="tag">Read this before you use one for coursework</span>
+  <p>Using an AI assistant is <strong>permitted and expected</strong> in this course. Concealing that use is
+  academic dishonesty. Every assignment from Laboratory 1 onward requires an <strong>AI Prompt Log</strong> — a
+  Word document recording every prompt you sent, word for word, what came back, how you checked it, and what
+  you corrected. It is worth 15 to 30 % of each assignment.</p>
+  <p style="margin-top:8px">Read the policy and the four-level marking rubric now, not in week three:
+  <a href="grading.html"><strong>grading system and AI policy</strong></a>.</p>
+</div>
+
+<h2>Part C — Create a GitHub account <span class="chip">Required</span></h2>
+
+<p>GitHub is where practising engineers keep code. You will use it to keep your own work safe and to show a
+history of what you wrote and when.</p>
+
+<ol class="steps">
+  <li>Register at <a href="https://github.com" target="_blank" rel="noopener">github.com</a>. Choose a
+  professional username — it becomes part of your public record. <code>juan-delacruz</code> is a good choice;
+  a nickname is not.</li>
+  <li>Apply for the <strong>GitHub Student Developer Pack</strong> using your school e-mail address. It is
+  free and gives you tools you will use beyond this course.</li>
+  <li>Create one repository named <code>numerical-methods-lab</code>. Set it to <strong>private</strong>, and
+  tick "Add a README file".</li>
+  <li>Upload your <code>hello.py</code> from Part A to that repository, using the web interface
+  (<em>Add file &rarr; Upload files</em>). Nothing more advanced is required at this stage.</li>
+  <li>Record the repository URL in <code>lab00_accounts_&lt;surname&gt;.txt</code>.</li>
+</ol>
+
+<div class="callout think">
+  <span class="tag">Why private</span>
+  <p>Your solutions are your own work and must not be visible to the rest of the class. A public repository
+  containing your assignment code is treated the same as handing out copies of it.</p>
+</div>
+
+<h2>Part D — Install and verify the libraries <span class="chip">Required</span></h2>
+
+<p>Three libraries are used in this course:</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Library</th><th>What it does</th><th>How it is used here</th></tr></thead>
+  <tbody>
+    <tr><td><strong>NumPy</strong></td><td>Arrays and array arithmetic</td>
+        <td>Used in every laboratory. This is the arithmetic, not the method, so it is permitted throughout.</td></tr>
+    <tr><td><strong>Matplotlib</strong></td><td>Plotting</td>
+        <td>Used in every laboratory. Every figure you submit is produced with it.</td></tr>
+    <tr><td><strong>SciPy</strong></td><td>Ready-made numerical routines</td>
+        <td><strong>Cross-checks only.</strong> You will build the methods yourself; SciPy is how you confirm
+        your own answer, and you must label it as a check in both the code and the report.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>D.1 Install them</h3>
+<p>In the VS Code terminal, run these two commands one after the other:</p>
+
+<pre><code>python -m pip install --upgrade pip
+python -m pip install numpy scipy matplotlib</code></pre>
+
+<p>The download is roughly 60 MB and takes a few minutes. Wait for the words <code>Successfully installed</code>
+before continuing.</p>
+
+<h3>D.2 Verify them</h3>
+
+<p>Create a file named <code>lab00_check_&lt;surname&gt;.py</code>, type in the program below exactly, fill in
+your name and student number at the top, and run it. Type it rather than copying it: it is the first Python you
+will write for this course, and the habits start here.</p>
+
+<pre><code><span class="c">"""
+Lab Assignment 0 - platform verification
+Name           : &lt;your name&gt;
+Student number : &lt;your student number&gt;
+"""</span>
+<span class="k">import</span> os
+<span class="k">import</span> sys
+
+<span class="k">import</span> numpy <span class="k">as</span> np
+<span class="k">import</span> scipy
+<span class="k">from</span> scipy <span class="k">import</span> integrate
+<span class="k">import</span> matplotlib
+<span class="k">import</span> matplotlib.pyplot <span class="k">as</span> plt
+
+<span class="c"># ---- 1. report the versions --------------------------------------------</span>
+<span class="k">print</span>(<span class="s">"Python     :"</span>, sys.version.split()[<span class="n">0</span>])
+<span class="k">print</span>(<span class="s">"NumPy      :"</span>, np.__version__)
+<span class="k">print</span>(<span class="s">"SciPy      :"</span>, scipy.__version__)
+<span class="k">print</span>(<span class="s">"Matplotlib :"</span>, matplotlib.__version__)
+
+<span class="c"># ---- 2. a NumPy calculation --------------------------------------------</span>
+<span class="c"># 200 points from 0 to 2*pi, then the sine of every one of them at once.</span>
+x = np.linspace(<span class="n">0</span>, <span class="n">2</span>*np.pi, <span class="n">200</span>)
+y = np.sin(x)
+<span class="k">print</span>(<span class="s">"\nmean of sin(x) over one period :"</span>, <span class="f">round</span>(<span class="f">float</span>(y.mean()), <span class="n">12</span>))
+
+<span class="c"># ---- 3. a SciPy cross-check --------------------------------------------</span>
+<span class="c"># The integral of sin(x) from 0 to pi is exactly 2.</span>
+area, _ = integrate.quad(np.sin, <span class="n">0</span>, np.pi)
+<span class="k">print</span>(<span class="s">"integral of sin(x) from 0 to pi :"</span>, <span class="f">round</span>(area, <span class="n">12</span>), <span class="s">"(exact value 2)"</span>)
+
+<span class="c"># ---- 4. a Matplotlib figure --------------------------------------------</span>
+os.makedirs(<span class="s">"figures"</span>, exist_ok=<span class="k">True</span>)
+plt.rcParams.update({<span class="s">"figure.dpi"</span>: <span class="n">150</span>})
+
+fig, ax = plt.subplots(figsize=(<span class="n">5.2</span>, <span class="n">3.2</span>))
+ax.plot(x, y, color=<span class="s">"#0b5fa5"</span>, lw=<span class="n">1.6</span>, label=<span class="s">"sin(x)"</span>)
+ax.plot(x, np.cos(x), color=<span class="s">"#8a5b00"</span>, lw=<span class="n">1.2</span>, ls=<span class="s">"--"</span>, label=<span class="s">"cos(x)"</span>)
+ax.set_xlabel(<span class="s">"x (radians)"</span>)
+ax.set_ylabel(<span class="s">"value"</span>)
+ax.set_title(<span class="s">"Lab Assignment 0 - platform check"</span>)
+ax.grid(<span class="k">True</span>, alpha=<span class="n">0.3</span>)
+ax.legend()
+fig.tight_layout()
+fig.savefig(<span class="s">"figures/lab00_check.png"</span>)
+
+<span class="k">print</span>(<span class="s">"\nfigure written to figures/lab00_check.png"</span>)
+<span class="k">print</span>(<span class="s">"PLATFORM READY."</span>)</code></pre>
+
+<h3>D.3 Capture the output</h3>
+
+<p>Run the program from the terminal so that the output is saved to a file. On Windows PowerShell:</p>
+
+<pre><code>python lab00_check_&lt;surname&gt;.py | Out-File -Encoding utf8 lab00_output_&lt;surname&gt;.txt</code></pre>
+
+<p>On macOS or Linux:</p>
+
+<pre><code>python lab00_check_&lt;surname&gt;.py &gt; lab00_output_&lt;surname&gt;.txt</code></pre>
+
+<p>The last line of that file must read <code>PLATFORM READY.</code> If it does not, the assignment is not
+complete.</p>
+
+<div class="callout trap">
+  <span class="tag">If you see ModuleNotFoundError</span>
+  <p><code>ModuleNotFoundError: No module named 'numpy'</code> means Python is running from a different
+  installation than the one <code>pip</code> installed into. The fix is almost always to use
+  <code>python -m pip install ...</code> — with the <code>python -m</code> prefix — rather than
+  <code>pip install ...</code> on its own, and to check that VS Code has selected the same interpreter
+  (bottom-right corner of the window).</p>
+</div>
+
+<h2>Part E — Evidence <span class="chip">Required</span></h2>
+
+<p>Assemble <code>lab00_setup_&lt;surname&gt;.pdf</code> containing these five screenshots, each with a caption
+of one sentence. A Word document exported to PDF is fine.</p>
+
+<ol class="steps">
+  <li>The terminal showing <code>python --version</code> and its answer.</li>
+  <li>VS Code with <code>hello.py</code> open and its output visible in the terminal.</li>
+  <li>The terminal showing the successful installation of NumPy, SciPy and Matplotlib.</li>
+  <li>The full console output of your verification program, ending in <code>PLATFORM READY.</code></li>
+  <li>Your GitHub repository page, showing the repository name and the uploaded file.</li>
+</ol>
+
+<p>Include the figure <code>figures/lab00_check.png</code> in the ZIP as a separate file as well as inside the
+PDF.</p>
+
+<h2>How this is marked</h2>
+
+<p>Assignment 0 is <strong>pass or fail</strong>. It carries no percentage of its own; it is a gate. Completion
+is recorded as part of your in-laboratory performance mark.</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Requirement</th><th>Pass</th><th>Fail</th></tr></thead>
+  <tbody>
+    <tr><td>Python installed</td><td><code>python --version</code> returns 3.11 or later</td><td>Command not recognised</td></tr>
+    <tr><td>VS Code running Python</td><td>A file runs and prints to the terminal</td><td>No screenshot, or an error visible</td></tr>
+    <tr><td>Libraries installed</td><td>All three versions printed by your program</td><td>Any <code>ModuleNotFoundError</code></td></tr>
+    <tr><td>Program runs</td><td>Output ends in <code>PLATFORM READY.</code></td><td>Any traceback</td></tr>
+    <tr><td>Figure produced</td><td><code>figures/lab00_check.png</code> exists and shows two labelled curves</td><td>Missing or empty</td></tr>
+    <tr><td>Accounts created</td><td>Two AI assistants and one GitHub repository, all recorded</td><td>Not recorded</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout key">
+  <span class="tag">If you get stuck</span>
+  <p>Bring the exact error message to the laboratory, or send it as selectable text. "It does not work" cannot
+  be diagnosed; <code>ModuleNotFoundError: No module named 'scipy'</code> can be fixed in ten seconds.</p>
+  <p style="margin-top:8px">This is also a legitimate first use of an AI assistant. Paste the error message and
+  ask what it means. Then check the answer against what actually happens on your machine — which is the habit
+  the whole course is built on.</p>
+</div>
+
+<h2>Submission checklist</h2>
+<ul class="checklist">
+  <li><code>python --version</code> returns 3.11 or later in a fresh terminal.</li>
+  <li>NumPy, SciPy and Matplotlib all import without error.</li>
+  <li>The verification program runs top to bottom and ends in <code>PLATFORM READY.</code></li>
+  <li><code>figures/lab00_check.png</code> exists and both curves are labelled.</li>
+  <li>Console output captured to a text file.</li>
+  <li>Five captioned screenshots assembled into the PDF.</li>
+  <li>GitHub repository created, set to private, with <code>hello.py</code> uploaded.</li>
+  <li>Two AI assistant accounts registered and recorded.</li>
+  <li>Everything zipped as <code>lab00_&lt;surname&gt;.zip</code>.</li>
+</ul>
+
+<div class="pagenav">
+  <span><a href="index.html">&larr; Course index</a></span>
+  <span><a href="lab-lecture-01.html">Lab Lecture 1 &rarr;</a></span>
+</div>
+
+<footer class="site">Numerical Methods Laboratory &middot; Lab Assignment 0 &middot; Prepared by Engr. Escranda</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab Lecture 6 — The Matrix as a Machine</title>
+<style>
+/* ============================================================
+   Numerical Methods Laboratory — shared stylesheet
+   White and blue. Code blocks remain dark. Print-friendly.
+   ============================================================ */
+
+:root {
+  --bg:        #ffffff;
+  --surface:   #ffffff;
+  --surface-2: #f2f6fb;
+  --surface-3: #e8f0f9;
+  --ink:       #10233a;
+  --ink-soft:  #3d5670;
+  --ink-faint: #6b8199;
+  --rule:      #d5e2f0;
+  --accent:    #0b5fa5;      /* primary blue */
+  --accent-dk: #08436f;
+  --accent-lt: #4a92d0;
+  --ok:        #14705c;
+  --warn:      #8a5b00;
+  --code-bg:   #0d1b2a;      /* black-blue: code stays dark */
+  --code-ink:  #e6edf5;
+  --shadow:    0 1px 2px rgba(16,35,58,.05), 0 6px 20px rgba(16,35,58,.07);
+  --mono: "Cascadia Code", "JetBrains Mono", Consolas, "SF Mono", Menlo, monospace;
+  --sans: "Segoe UI", Inter, system-ui, -apple-system, Roboto, sans-serif;
+  --serif: "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 24px 96px; }
+.wrap-wide { max-width: 1080px; margin: 0 auto; padding: 0 24px 96px; }
+
+/* ---------- masthead ---------- */
+.masthead {
+  border-bottom: 2px solid var(--accent);
+  background: var(--surface);
+  padding: 10px 0;
+  margin-bottom: 40px;
+}
+.masthead .wrap, .masthead .wrap-wide { padding-bottom: 0; }
+.crumbs {
+  font-size: 13px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-faint); display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+}
+.crumbs a { color: var(--accent); text-decoration: none; }
+.crumbs a:hover { text-decoration: underline; }
+
+/* ---------- titles ---------- */
+.eyebrow {
+  font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent); margin: 0 0 10px;
+}
+h1 {
+  font-family: var(--serif);
+  font-size: clamp(30px, 5vw, 43px);
+  line-height: 1.14; margin: 0 0 12px; letter-spacing: -.01em; font-weight: 700;
+  color: var(--ink);
+}
+h2 {
+  font-family: var(--serif);
+  font-size: clamp(23px, 3.2vw, 29px);
+  margin: 52px 0 14px; line-height: 1.2; color: var(--accent-dk);
+  padding-bottom: 8px; border-bottom: 1px solid var(--rule);
+}
+h3 { font-size: 19px; margin: 32px 0 10px; letter-spacing: -.005em; color: var(--ink); }
+h4 { font-size: 15px; margin: 24px 0 8px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .08em; }
+.lede { font-size: 19px; color: var(--ink-soft); line-height: 1.6; margin: 0 0 8px; }
+
+.meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 8px; }
+.chip {
+  font-size: 12.5px; font-weight: 600; letter-spacing: .04em;
+  padding: 4px 11px; border-radius: 3px;
+  background: var(--surface-2); color: var(--ink-soft); border: 1px solid var(--rule);
+}
+.chip.hot { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+hr.rule { border: 0; border-top: 1px solid var(--rule); margin: 44px 0; }
+
+/* ---------- narrative / case blocks ---------- */
+.story {
+  font-family: var(--serif);
+  font-size: 18.5px; line-height: 1.7;
+  background: var(--surface-2);
+  border-left: 3px solid var(--accent);
+  padding: 20px 24px; margin: 26px 0;
+  border-radius: 0 4px 4px 0;
+}
+.story p:first-child { margin-top: 0; }
+.story p:last-child { margin-bottom: 0; }
+.story .who {
+  font-family: var(--sans); font-size: 12.5px; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--accent); font-weight: 700; margin-bottom: 8px;
+}
+
+.callout {
+  border: 1px solid var(--rule); border-radius: 4px;
+  padding: 16px 20px; margin: 22px 0; background: var(--surface);
+}
+.callout .tag { font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+.callout.think { border-left: 3px solid var(--accent-lt); background: var(--surface-2); }
+.callout.think .tag { color: var(--accent); }
+.callout.trap { border-left: 3px solid var(--warn); }
+.callout.trap .tag { color: var(--warn); }
+.callout.key  { border-left: 3px solid var(--accent-dk); background: var(--surface-3); }
+.callout.key .tag { color: var(--accent-dk); }
+.callout p:first-of-type { margin-top: 0; }
+.callout p:last-child { margin-bottom: 0; }
+
+/* ---------- math ---------- */
+.math {
+  font-family: var(--serif); font-size: 20px; text-align: center;
+  padding: 18px 12px; margin: 20px 0; color: var(--ink);
+  background: var(--surface-2); border: 1px solid var(--rule);
+  border-radius: 4px; overflow-x: auto;
+}
+.frac { display: inline-block; vertical-align: middle; text-align: center; margin: 0 .25em; }
+.frac > span { display: block; padding: 0 .35em; }
+.frac .den { border-top: 1.5px solid currentColor; }
+.eqn-no { float: right; color: var(--ink-faint); font-family: var(--sans); font-size: 14px; }
+var, .v { font-family: var(--serif); font-style: italic; }
+
+/* ---------- code (stays dark) ---------- */
+pre {
+  background: var(--code-bg); color: var(--code-ink);
+  padding: 18px 20px; border-radius: 4px; overflow-x: auto;
+  font-family: var(--mono); font-size: 14px; line-height: 1.6;
+  margin: 18px 0; border: 1px solid #0a1622;
+}
+pre .c { color: #7e93a8; font-style: italic; }   /* comment  */
+pre .k { color: #7fb3ff; }                        /* keyword  */
+pre .s { color: #9fd39a; }                        /* string   */
+pre .n { color: #ffcf7a; }                        /* number   */
+pre .f { color: #8fd8ec; }                        /* function */
+code {
+  font-family: var(--mono); font-size: .9em;
+  background: var(--surface-2); padding: 2px 6px; border-radius: 3px;
+  border: 1px solid var(--rule); color: var(--accent-dk);
+}
+pre code { background: none; border: 0; padding: 0; font-size: inherit; color: inherit; }
+
+/* ---------- tables ---------- */
+table {
+  width: 100%; border-collapse: collapse; margin: 22px 0;
+  font-size: 15px; background: var(--surface);
+  border: 1px solid var(--rule);
+}
+th, td { padding: 10px 13px; text-align: left; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th {
+  background: var(--accent); color: #fff; font-size: 12.5px;
+  text-transform: uppercase; letter-spacing: .06em; font-weight: 700;
+}
+tbody tr:nth-child(even) { background: var(--surface-2); }
+tbody tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-family: var(--mono); font-size: 13.5px; }
+.table-scroll { overflow-x: auto; }
+
+/* ---------- lists ---------- */
+ul, ol { padding-left: 22px; }
+li { margin: 7px 0; }
+li::marker { color: var(--accent); }
+ol.steps { counter-reset: s; list-style: none; padding-left: 0; }
+ol.steps > li { counter-increment: s; position: relative; padding-left: 42px; margin: 16px 0; }
+ol.steps > li::before {
+  content: counter(s); position: absolute; left: 0; top: 1px;
+  width: 28px; height: 28px; border-radius: 3px;
+  background: var(--accent); color: #fff; font-weight: 700; font-size: 14px;
+  display: grid; place-items: center;
+}
+
+/* ---------- cards ---------- */
+.grid { display: grid; gap: 16px; margin: 24px 0; }
+.grid.two   { grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); }
+.grid.three { grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); }
+
+.card {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 4px;
+  border-top: 3px solid var(--accent);
+  padding: 18px 20px; box-shadow: var(--shadow);
+  text-decoration: none; color: inherit; display: block;
+}
+a.card:hover { border-color: var(--accent-lt); border-top-color: var(--accent-dk); background: var(--surface-2); }
+.card h3 { margin: 4px 0 6px; font-size: 17px; }
+.card p { margin: 0; font-size: 14.5px; color: var(--ink-soft); }
+.card .n { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 700; letter-spacing: .1em; }
+
+/* ---------- buttons ---------- */
+.btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 28px 0; }
+.btn {
+  display: inline-block; padding: 11px 20px; border-radius: 3px;
+  font-size: 15px; font-weight: 600; text-decoration: none;
+  background: var(--accent); color: #fff; border: 1px solid var(--accent);
+}
+.btn:hover { background: var(--accent-dk); border-color: var(--accent-dk); }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn.ghost:hover { background: var(--surface-2); color: var(--accent-dk); }
+
+/* ---------- checklist ---------- */
+.checklist { list-style: none; padding-left: 0; }
+.checklist li { padding-left: 30px; position: relative; }
+.checklist li::before {
+  content: ""; position: absolute; left: 0; top: 5px;
+  width: 15px; height: 15px; border: 2px solid var(--accent-lt); border-radius: 2px;
+}
+
+/* ---------- footer nav ---------- */
+.pagenav {
+  display: flex; justify-content: space-between; gap: 16px;
+  border-top: 1px solid var(--rule); margin-top: 56px; padding-top: 20px;
+  font-size: 15px;
+}
+.pagenav a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.pagenav a:hover { text-decoration: underline; }
+
+footer.site {
+  border-top: 1px solid var(--rule); margin-top: 40px; padding: 22px 0 60px;
+  color: var(--ink-faint); font-size: 13.5px; text-align: center;
+}
+
+a { color: var(--accent); }
+
+/* ---------- print ---------- */
+@media print {
+  :root { --surface-2:#f4f7fa; --shadow:none; }
+  body { font-size: 11pt; }
+  pre { background:#f2f5f8; color:#101c28; border:1px solid #c8d6e4; }
+  pre .c,pre .k,pre .s,pre .n,pre .f { color:#101c28; }
+  th { background:#e8f0f9; color:#10233a; }
+  .masthead, .pagenav, .btn-row { display: none; }
+  h2 { page-break-after: avoid; }
+  pre, table, .callout, .story { page-break-inside: avoid; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="wrap">
+    <div class="crumbs">
+      <a href="index.html">Numerical Methods</a> <span>/</span>
+      <span>Lab Lecture 6</span> <span>/</span>
+      <a href="lab-assignment-06.html">Assignment 6</a> <span>/</span>
+      <a href="grading.html">Grading</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<p class="eyebrow">Lab Lecture 6 &middot; Lecture topic: Matrices</p>
+<h1>The Matrix as a Machine</h1>
+<p class="lede">A truss with ten members produces ten equations that must be satisfied at the same instant. No
+member can be solved first. This lab covers the standard method for solving such systems — Gauss elimination
+with partial pivoting — and the reason a structural analysis can fail on a matrix that looks perfectly
+ordinary.</p>
+
+<div class="meta-row">
+  <span class="chip">3 hours</span>
+  <span class="chip">Gauss elimination</span>
+  <span class="chip">Partial pivoting</span>
+  <span class="chip hot">Assignment 6 due next session</span>
+</div>
+
+<h2>1. Where the equations come from</h2>
+
+<div class="story">
+  <div class="who">Case file — pin-jointed roof truss, method of joints</div>
+  <p>A designer analysing a small roof truss writes the equilibrium equations joint by joint. At each pin,
+  &Sigma;<span class="v">F<sub>x</sub></span> = 0 and &Sigma;<span class="v">F<sub>y</sub></span> = 0. Six joints
+  give twelve equations; the truss has nine members and three reaction components, so there are twelve unknowns.</p>
+  <p>Solving them by hand means choosing a joint with only two unknowns, solving it, substituting forward, and
+  hoping the arithmetic holds. It works for a textbook truss. It does not work for the 400-member frame the
+  designer will meet in practice, and it does not work at all when no joint has fewer than three unknowns.</p>
+</div>
+
+<p>Written in full, a system of <span class="v">n</span> simultaneous linear equations is</p>
+
+<div class="math" style="font-size:17px">
+  <span class="v">a</span><sub>11</sub><span class="v">x</span><sub>1</sub> + <span class="v">a</span><sub>12</sub><span class="v">x</span><sub>2</sub> + &hellip; + <span class="v">a</span><sub>1<span class="v">n</span></sub><span class="v">x<sub>n</sub></span> = <span class="v">b</span><sub>1</sub><br>
+  <span class="v">a</span><sub>21</sub><span class="v">x</span><sub>1</sub> + <span class="v">a</span><sub>22</sub><span class="v">x</span><sub>2</sub> + &hellip; + <span class="v">a</span><sub>2<span class="v">n</span></sub><span class="v">x<sub>n</sub></span> = <span class="v">b</span><sub>2</sub><br>
+  &hellip;<br>
+  <span class="v">a</span><sub><span class="v">n</span>1</sub><span class="v">x</span><sub>1</sub> + &hellip; + <span class="v">a<sub>nn</sub></span><span class="v">x<sub>n</sub></span> = <span class="v">b<sub>n</sub></span>
+</div>
+
+<p>Collect the coefficients into a matrix and the equations become <strong>[<span class="v">A</span>]{<span class="v">x</span>} = {<span class="v">b</span>}</strong>.
+The matrix is not a decorative arrangement of numbers. It is the structure itself: row <span class="v">i</span>
+is one equilibrium condition, column <span class="v">j</span> is the influence of member <span class="v">j</span>
+on every equation it appears in.</p>
+
+<div class="callout key">
+  <span class="tag">What each object means in a civil problem</span>
+  <table style="margin:8px 0 0">
+    <thead><tr><th>Object</th><th>Structural analysis</th><th>Pipe network</th><th>Survey adjustment</th></tr></thead>
+    <tbody>
+      <tr><td>{<span class="v">x</span>}</td><td>member forces or joint displacements</td><td>nodal heads</td><td>coordinate corrections</td></tr>
+      <tr><td>{<span class="v">b</span>}</td><td>applied loads</td><td>demands and inflows</td><td>observed misclosures</td></tr>
+      <tr><td>[<span class="v">A</span>]</td><td>geometry and stiffness</td><td>pipe resistances</td><td>observation geometry</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2>2. Matrix–vector multiplication is the model, evaluated</h2>
+
+<p>Before solving anything, be clear about what a matrix–vector product does. {<span class="v">b</span>} =
+[<span class="v">A</span>]{<span class="v">x</span>} takes a set of member forces and reports the resulting
+net force at every joint. It runs the model <em>forwards</em>.</p>
+
+<pre><code><span class="k">import</span> numpy <span class="k">as</span> np
+
+<span class="k">def</span> <span class="f">matvec</span>(A, x):
+    <span class="s">"""b = A x, written out. Row i of A dotted with x gives equation i."""</span>
+    n, m = A.shape
+    b = np.zeros(n)
+    <span class="k">for</span> i <span class="k">in</span> <span class="f">range</span>(n):
+        <span class="k">for</span> j <span class="k">in</span> <span class="f">range</span>(m):
+            b[i] += A[i, j] * x[j]
+    <span class="k">return</span> b</code></pre>
+
+<p>Solving [<span class="v">A</span>]{<span class="v">x</span>} = {<span class="v">b</span>} runs the model
+<em>backwards</em>: the loads are known and the forces that produce them are not. Running a model backwards is
+almost always the harder direction, and that asymmetry is the reason this lab exists.</p>
+
+<div class="callout trap">
+  <span class="tag">Never invert the matrix</span>
+  <p>The formula {<span class="v">x</span>} = [<span class="v">A</span>]<sup>&minus;1</sup>{<span class="v">b</span>}
+  is correct mathematics and poor computing. Forming the inverse costs about three times as much arithmetic as
+  solving directly, and it is less accurate, because every entry of the inverse carries its own accumulated
+  round-off. In forty years of practice the number of civil engineering calculations that genuinely require an
+  explicit inverse is close to zero. Use elimination.</p>
+</div>
+
+<h2>3. Gauss elimination</h2>
+
+<p>The method has two phases and one idea. The idea: adding a multiple of one equation to another does not
+change the solution, so we may do it freely until the system becomes trivial to read off.</p>
+
+<h3>3.1 Forward elimination</h3>
+
+<p>Use the first equation to remove <span class="v">x</span><sub>1</sub> from all the others; use the new second
+equation to remove <span class="v">x</span><sub>2</sub> from those below it; continue. The result is an upper
+triangular matrix — the last equation contains a single unknown.</p>
+
+<h3>3.2 Back substitution</h3>
+
+<p>Solve the last equation, substitute upwards, and work back to the first.</p>
+
+<pre><code><span class="k">def</span> <span class="f">gauss_naive</span>(A, b):
+    <span class="s">"""Solve Ax = b by Gauss elimination without pivoting. Instructional only."""</span>
+    A = np.array(A, <span class="f">float</span>)          <span class="c"># copy: never modify the caller's data</span>
+    b = np.array(b, <span class="f">float</span>)
+    n = <span class="f">len</span>(b)
+
+    <span class="c"># forward elimination</span>
+    <span class="k">for</span> k <span class="k">in</span> <span class="f">range</span>(n - <span class="n">1</span>):
+        <span class="k">for</span> i <span class="k">in</span> <span class="f">range</span>(k + <span class="n">1</span>, n):
+            factor = A[i, k] / A[k, k]              <span class="c"># <-- the weak point</span>
+            A[i, k:] -= factor * A[k, k:]
+            b[i]     -= factor * b[k]
+
+    <span class="c"># back substitution</span>
+    x = np.zeros(n)
+    <span class="k">for</span> i <span class="k">in</span> <span class="f">range</span>(n - <span class="n">1</span>, -<span class="n">1</span>, -<span class="n">1</span>):
+        x[i] = (b[i] - A[i, i+<span class="n">1</span>:] @ x[i+<span class="n">1</span>:]) / A[i, i]
+    <span class="k">return</span> x</code></pre>
+
+<p>The cost is roughly <span class="v">n</span><sup>3</sup>/3 multiplications. Doubling the size of the structure
+multiplies the work by eight. A 400-member frame is 400<sup>3</sup>/3 &asymp; 21 million operations, which a
+laptop completes in well under a second; a 40,000-member model is 21 &times; 10<sup>12</sup>, which it does not.
+That gap is what Lab 7 addresses.</p>
+
+<h2>4. Why the naive version fails</h2>
+
+<p>The marked line divides by <code>A[k, k]</code>, the pivot. Two things go wrong with it.</p>
+
+<h3>4.1 A zero pivot</h3>
+
+<div class="math" style="font-size:17px">
+  [<span class="v">A</span>] =
+  <span style="display:inline-block;border-left:2px solid;border-right:2px solid;padding:2px 8px">
+    0&nbsp;&nbsp;2&nbsp;&nbsp;1<br>1&nbsp;&nbsp;3&nbsp;&nbsp;2<br>2&nbsp;&nbsp;1&nbsp;&nbsp;4
+  </span>
+</div>
+
+<p>Nothing is wrong with this system; it has a perfectly good unique solution. But the first pivot is zero, the
+code divides by zero, and the answer comes back as <code>nan</code>. In a truss this happens whenever the first
+joint has no member acting along the first coordinate direction — that is, routinely.</p>
+
+<h3>4.2 A small pivot, which is worse</h3>
+
+<p>A zero pivot announces itself. A small one does not. Consider</p>
+
+<div class="math" style="font-size:17px">
+  0.0003<span class="v">x</span><sub>1</sub> + 3.0000<span class="v">x</span><sub>2</sub> = 2.0001
+  &nbsp;&nbsp;&nbsp;
+  1.0000<span class="v">x</span><sub>1</sub> + 1.0000<span class="v">x</span><sub>2</sub> = 1.0000
+</div>
+
+<p>The exact solution is <span class="v">x</span><sub>1</sub> = <sup>1</sup>&frasl;<sub>3</sub>,
+<span class="v">x</span><sub>2</sub> = <sup>2</sup>&frasl;<sub>3</sub>. Eliminate using the first row as the
+pivot and the multiplier is 1/0.0003 = 3333. That multiplier magnifies the round-off already present in the
+first row by a factor of three thousand before subtracting it from the second. Carried at five significant
+figures, the computed answer for <span class="v">x</span><sub>1</sub> comes out as &minus;3.33 — wrong in sign,
+wrong in magnitude, and produced without any warning.</p>
+
+<div class="callout key">
+  <span class="tag">Partial pivoting</span>
+  <p>Before eliminating in column <span class="v">k</span>, find the row at or below <span class="v">k</span>
+  with the largest absolute value in that column, and swap it into the pivot position. Every multiplier is then
+  at most 1 in magnitude, so no error is amplified. The cost is a search and a row swap — a few per cent of the
+  total runtime. There is no situation in which you should omit it.</p>
+</div>
+
+<pre><code><span class="k">def</span> <span class="f">gauss_pivot</span>(A, b, tol=<span class="n">1e-12</span>):
+    <span class="s">"""Solve Ax = b by Gauss elimination with partial pivoting.
+
+    Returns x. Raises ValueError if the matrix is numerically singular.
+    """</span>
+    A = np.array(A, <span class="f">float</span>)
+    b = np.array(b, <span class="f">float</span>)
+    n = <span class="f">len</span>(b)
+
+    <span class="k">for</span> k <span class="k">in</span> <span class="f">range</span>(n - <span class="n">1</span>):
+        p = k + <span class="f">int</span>(np.argmax(np.abs(A[k:, k])))     <span class="c"># largest pivot available</span>
+        <span class="k">if</span> <span class="f">abs</span>(A[p, k]) &lt; tol:
+            <span class="k">raise</span> <span class="f">ValueError</span>(<span class="s">f"Matrix is singular at column {k}."</span>)
+        <span class="k">if</span> p != k:
+            A[[k, p]] = A[[p, k]]                    <span class="c"># swap rows</span>
+            b[[k, p]] = b[[p, k]]
+
+        <span class="k">for</span> i <span class="k">in</span> <span class="f">range</span>(k + <span class="n">1</span>, n):
+            factor = A[i, k] / A[k, k]               <span class="c"># now |factor| &lt;= 1</span>
+            A[i, k:] -= factor * A[k, k:]
+            b[i]     -= factor * b[k]
+
+    <span class="k">if</span> <span class="f">abs</span>(A[-<span class="n">1</span>, -<span class="n">1</span>]) &lt; tol:
+        <span class="k">raise</span> <span class="f">ValueError</span>(<span class="s">"Matrix is singular at the last pivot."</span>)
+
+    x = np.zeros(n)
+    <span class="k">for</span> i <span class="k">in</span> <span class="f">range</span>(n - <span class="n">1</span>, -<span class="n">1</span>, -<span class="n">1</span>):
+        x[i] = (b[i] - A[i, i+<span class="n">1</span>:] @ x[i+<span class="n">1</span>:]) / A[i, i]
+    <span class="k">return</span> x</code></pre>
+
+<h2>5. Checking the answer</h2>
+
+<p>A linear solver returns numbers whatever you give it. Two checks separate a result from a guess.</p>
+
+<h3>5.1 The residual</h3>
+
+<pre><code>r = b - A @ x
+<span class="k">print</span>(<span class="s">f"max |residual| = {np.max(np.abs(r)):.3e}"</span>)</code></pre>
+
+<p>The residual should be at the level of round-off relative to the size of {<span class="v">b</span>} — around
+10<sup>&minus;12</sup> for entries of order 1. A large residual means the solve failed. A <em>small</em> residual,
+however, does not by itself prove the answer is accurate; that is the subject of Lab 7.</p>
+
+<h3>5.2 Equilibrium, in the language of the problem</h3>
+
+<p>For a truss, substitute the member forces back into the joint equations and confirm that
+&Sigma;<span class="v">F<sub>x</sub></span> and &Sigma;<span class="v">F<sub>y</sub></span> vanish at every pin,
+and that the reactions sum to the applied load. This catches errors the residual cannot: a sign convention
+reversed when the matrix was assembled produces a system that is solved perfectly and describes the wrong
+structure.</p>
+
+<div class="callout think">
+  <span class="tag">Where the real errors are</span>
+  <p>In practice almost no marks are lost inside the elimination routine, which is short and testable. They are
+  lost in <em>assembling</em> [<span class="v">A</span>]: a member angle measured from the wrong axis, a
+  compression taken as positive in one joint and negative in another, a support condition omitted. Build the
+  matrix for a three-member truss you can check by hand before trusting it with nine.</p>
+</div>
+
+<h2>6. Worked example: the three-bar truss</h2>
+
+<p>This is the example to follow with a calculator before writing any code. A pin-jointed joint carries a 10 kN
+vertical load. Three members meet there: <span class="v">F</span><sub>1</sub> at 30&deg; above the horizontal,
+<span class="v">F</span><sub>2</sub> vertical, and <span class="v">F</span><sub>3</sub> at 135&deg;. A support
+condition fixes the vertical member force contribution at &minus;4 kN. Tension is taken positive throughout.</p>
+
+<h3>6.1 The system</h3>
+
+<div class="math" style="font-size:17px">
+  <span style="display:inline-block;border-left:2px solid;border-right:2px solid;padding:2px 10px">
+    0.8660&nbsp;&nbsp;0.0000&nbsp;&minus;0.7071<br>
+    0.5000&nbsp;&nbsp;1.0000&nbsp;&nbsp;0.7071<br>
+    0.0000&nbsp;&nbsp;1.0000&nbsp;&nbsp;0.0000
+  </span>
+  <span style="display:inline-block;border-left:2px solid;border-right:2px solid;padding:2px 8px">
+    <span class="v">F</span><sub>1</sub><br><span class="v">F</span><sub>2</sub><br><span class="v">F</span><sub>3</sub>
+  </span>
+  =
+  <span style="display:inline-block;border-left:2px solid;border-right:2px solid;padding:2px 8px">
+    0.00<br>&minus;10.00<br>&minus;4.00
+  </span>
+</div>
+
+<h3>6.2 Step 1 — choose the pivot</h3>
+<p>Column 1 holds 0.8660, 0.5000 and 0.0000. The largest magnitude is already in row 1, so no swap is needed.
+Had the equations been written in a different order — and a student assembling by joints will produce a
+different order — the swap would have been essential.</p>
+
+<h3>6.3 Step 2 — eliminate column 1</h3>
+<p>Multiplier for row 2: 0.5000 / 0.8660 = 0.57737. Row 3 already has a zero, so it is untouched.</p>
+<div class="math" style="font-size:16px">
+  R2 &larr; R2 &minus; 0.57737 R1:
+  &nbsp;&nbsp; [0, 1.0000, 1.11536 | &minus;10.0000]
+</div>
+
+<h3>6.4 Step 3 — eliminate column 2</h3>
+<p>Pivot 1.0000 in row 2; multiplier for row 3 is 1.0000/1.0000 = 1.</p>
+<div class="math" style="font-size:16px">
+  R3 &larr; R3 &minus; 1.0 R2: &nbsp;&nbsp; [0, 0, &minus;1.11536 | 6.0000]
+</div>
+
+<h3>6.5 Step 4 — back substitution</h3>
+<div class="math" style="font-size:16px">
+  <span class="v">F</span><sub>3</sub> = 6.0000 / (&minus;1.11536) = &minus;5.3794 kN<br>
+  <span class="v">F</span><sub>2</sub> = &minus;10.0000 &minus; 1.11536(&minus;5.3794) = &minus;4.0000 kN<br>
+  <span class="v">F</span><sub>1</sub> = [0 + 0.7071(&minus;5.3794)] / 0.8660 = &minus;4.3924 kN
+</div>
+
+<h3>6.6 The same thing in code</h3>
+
+<pre><code>A = np.array([[ <span class="n">0.8660</span>, <span class="n">0.0</span>, -<span class="n">0.7071</span>],
+              [ <span class="n">0.5000</span>, <span class="n">1.0</span>,  <span class="n">0.7071</span>],
+              [ <span class="n">0.0000</span>, <span class="n">1.0</span>,  <span class="n">0.0000</span>]])
+b = np.array([<span class="n">0.0</span>, -<span class="n">10.0</span>, -<span class="n">4.0</span>])          <span class="c"># kN</span>
+
+x = gauss_pivot(A, b)
+<span class="k">print</span>(<span class="s">"member forces (kN):"</span>, np.round(x, <span class="n">4</span>))
+<span class="k">print</span>(<span class="s">"max residual:"</span>, np.max(np.abs(b - A @ x)))</code></pre>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Member</th><th class="num">Force (kN)</th><th>Sense</th></tr></thead>
+  <tbody>
+    <tr><td>F<sub>1</sub> (30&deg;)</td><td class="num">&minus;4.3924</td><td>compression</td></tr>
+    <tr><td>F<sub>2</sub> (vertical)</td><td class="num">&minus;4.0000</td><td>compression</td></tr>
+    <tr><td>F<sub>3</sub> (135&deg;)</td><td class="num">&minus;5.3794</td><td>compression</td></tr>
+    <tr><td colspan="3">maximum residual = 2.2 &times; 10<sup>&minus;16</sup> kN</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The hand solution and the code agree to four decimal places, and the residual is at round-off level. Both
+checks are required: the first confirms the method, the second confirms the arithmetic. Positive values would
+indicate tension, provided the matrix was assembled with that convention — stating the convention in the report
+is part of the answer, not a formality.</p>
+
+<h2>7. Where it breaks</h2>
+
+<div class="grid two">
+  <div class="card">
+    <h3>Singular matrix</h3>
+    <p>A mechanism rather than a structure: too few members, or members arranged so that the truss can move
+    without straining. Elimination reaches a zero pivot it cannot swap away. The correct response is to fix the
+    structure, not the code.</p>
+  </div>
+  <div class="card">
+    <h3>Nearly singular</h3>
+    <p>Two members almost parallel. The system solves, the residual is small, and the answer is still unreliable.
+    Lab 7 introduces the condition number, which measures exactly this.</p>
+  </div>
+  <div class="card">
+    <h3>Mixed units</h3>
+    <p>Forces in newtons and displacements in metres produce coefficients spanning 10<sup>9</sup>. Elimination
+    survives it, but accuracy suffers. Scale the equations so the coefficients are of comparable size.</p>
+  </div>
+  <div class="card">
+    <h3>Cost</h3>
+    <p>n<sup>3</sup>/3 operations, and memory for n<sup>2</sup> entries. A 10,000-node seepage mesh would need
+    800 MB for a dense matrix that is 99.9 % zeros. Sparse and iterative methods exist for exactly this reason.</p>
+  </div>
+</div>
+
+<h2>8. In-lab exercises</h2>
+
+<ol class="steps">
+  <li>Run <code>gauss_naive</code> on the zero-pivot matrix in section 4.1 and observe the failure. Then run <code>gauss_pivot</code> and confirm it recovers.</li>
+  <li>Solve the 0.0003 system with both routines. Compare with the exact solution (1/3, 2/3) and report the relative error of each.</li>
+  <li>Verify the operation count: time your solver for <span class="v">n</span> = 50, 100, 200 random systems and confirm the time ratio is close to 8 when <span class="v">n</span> doubles.</li>
+  <li>Assemble and solve the three-bar truss. Confirm equilibrium at the loaded joint by hand.</li>
+  <li>Multiply one equation of a solved system by 10<sup>6</sup> and re-solve. The mathematics is unchanged; report what happens to the residual and explain why scaling matters.</li>
+</ol>
+
+<div class="btn-row">
+  <a class="btn" href="lab-assignment-06.html">Go to Assignment 6 &rarr;</a>
+  <a class="btn ghost" href="lab06_demo.py">Lecture program (lab06_demo.py)</a>
+  <a class="btn ghost" href="lab06_starter.py">starter.py</a>
+</div>
+
+<h2>9. Carry into Lab 7</h2>
+<ul>
+  <li>A matrix is a model; solving it runs the model backwards.</li>
+  <li>Elimination then back substitution, at a cost of <span class="v">n</span><sup>3</sup>/3.</li>
+  <li>Always pivot. A small pivot corrupts the answer silently.</li>
+  <li>Check the residual, then check equilibrium in the units of the problem.</li>
+  <li>Next: the same structure under eighty load cases, and matrices too large to eliminate at all.</li>
+</ul>
+
+<div class="pagenav">
+  <span><a href="lab-lecture-05.html">&larr; Lab Lecture 5</a></span>
+  <span><a href="lab-lecture-07.html">Lab Lecture 7 &rarr;</a></span>
+</div>
+
+<footer class="site">Numerical Methods Laboratory &middot; Lab Lecture 6 &middot; Prepared by Engr. Escranda</footer>
+</div>
+</body>
+</html>

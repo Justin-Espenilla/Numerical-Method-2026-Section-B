@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab Assignment 4 — Totals from Rates</title>
+<style>
+/* ============================================================
+   Numerical Methods Laboratory — shared stylesheet
+   White and blue. Code blocks remain dark. Print-friendly.
+   ============================================================ */
+
+:root {
+  --bg:        #ffffff;
+  --surface:   #ffffff;
+  --surface-2: #f2f6fb;
+  --surface-3: #e8f0f9;
+  --ink:       #10233a;
+  --ink-soft:  #3d5670;
+  --ink-faint: #6b8199;
+  --rule:      #d5e2f0;
+  --accent:    #0b5fa5;      /* primary blue */
+  --accent-dk: #08436f;
+  --accent-lt: #4a92d0;
+  --ok:        #14705c;
+  --warn:      #8a5b00;
+  --code-bg:   #0d1b2a;      /* black-blue: code stays dark */
+  --code-ink:  #e6edf5;
+  --shadow:    0 1px 2px rgba(16,35,58,.05), 0 6px 20px rgba(16,35,58,.07);
+  --mono: "Cascadia Code", "JetBrains Mono", Consolas, "SF Mono", Menlo, monospace;
+  --sans: "Segoe UI", Inter, system-ui, -apple-system, Roboto, sans-serif;
+  --serif: "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 24px 96px; }
+.wrap-wide { max-width: 1080px; margin: 0 auto; padding: 0 24px 96px; }
+
+/* ---------- masthead ---------- */
+.masthead {
+  border-bottom: 2px solid var(--accent);
+  background: var(--surface);
+  padding: 10px 0;
+  margin-bottom: 40px;
+}
+.masthead .wrap, .masthead .wrap-wide { padding-bottom: 0; }
+.crumbs {
+  font-size: 13px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-faint); display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+}
+.crumbs a { color: var(--accent); text-decoration: none; }
+.crumbs a:hover { text-decoration: underline; }
+
+/* ---------- titles ---------- */
+.eyebrow {
+  font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent); margin: 0 0 10px;
+}
+h1 {
+  font-family: var(--serif);
+  font-size: clamp(30px, 5vw, 43px);
+  line-height: 1.14; margin: 0 0 12px; letter-spacing: -.01em; font-weight: 700;
+  color: var(--ink);
+}
+h2 {
+  font-family: var(--serif);
+  font-size: clamp(23px, 3.2vw, 29px);
+  margin: 52px 0 14px; line-height: 1.2; color: var(--accent-dk);
+  padding-bottom: 8px; border-bottom: 1px solid var(--rule);
+}
+h3 { font-size: 19px; margin: 32px 0 10px; letter-spacing: -.005em; color: var(--ink); }
+h4 { font-size: 15px; margin: 24px 0 8px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .08em; }
+.lede { font-size: 19px; color: var(--ink-soft); line-height: 1.6; margin: 0 0 8px; }
+
+.meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 8px; }
+.chip {
+  font-size: 12.5px; font-weight: 600; letter-spacing: .04em;
+  padding: 4px 11px; border-radius: 3px;
+  background: var(--surface-2); color: var(--ink-soft); border: 1px solid var(--rule);
+}
+.chip.hot { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+hr.rule { border: 0; border-top: 1px solid var(--rule); margin: 44px 0; }
+
+/* ---------- narrative / case blocks ---------- */
+.story {
+  font-family: var(--serif);
+  font-size: 18.5px; line-height: 1.7;
+  background: var(--surface-2);
+  border-left: 3px solid var(--accent);
+  padding: 20px 24px; margin: 26px 0;
+  border-radius: 0 4px 4px 0;
+}
+.story p:first-child { margin-top: 0; }
+.story p:last-child { margin-bottom: 0; }
+.story .who {
+  font-family: var(--sans); font-size: 12.5px; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--accent); font-weight: 700; margin-bottom: 8px;
+}
+
+.callout {
+  border: 1px solid var(--rule); border-radius: 4px;
+  padding: 16px 20px; margin: 22px 0; background: var(--surface);
+}
+.callout .tag { font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+.callout.think { border-left: 3px solid var(--accent-lt); background: var(--surface-2); }
+.callout.think .tag { color: var(--accent); }
+.callout.trap { border-left: 3px solid var(--warn); }
+.callout.trap .tag { color: var(--warn); }
+.callout.key  { border-left: 3px solid var(--accent-dk); background: var(--surface-3); }
+.callout.key .tag { color: var(--accent-dk); }
+.callout p:first-of-type { margin-top: 0; }
+.callout p:last-child { margin-bottom: 0; }
+
+/* ---------- math ---------- */
+.math {
+  font-family: var(--serif); font-size: 20px; text-align: center;
+  padding: 18px 12px; margin: 20px 0; color: var(--ink);
+  background: var(--surface-2); border: 1px solid var(--rule);
+  border-radius: 4px; overflow-x: auto;
+}
+.frac { display: inline-block; vertical-align: middle; text-align: center; margin: 0 .25em; }
+.frac > span { display: block; padding: 0 .35em; }
+.frac .den { border-top: 1.5px solid currentColor; }
+.eqn-no { float: right; color: var(--ink-faint); font-family: var(--sans); font-size: 14px; }
+var, .v { font-family: var(--serif); font-style: italic; }
+
+/* ---------- code (stays dark) ---------- */
+pre {
+  background: var(--code-bg); color: var(--code-ink);
+  padding: 18px 20px; border-radius: 4px; overflow-x: auto;
+  font-family: var(--mono); font-size: 14px; line-height: 1.6;
+  margin: 18px 0; border: 1px solid #0a1622;
+}
+pre .c { color: #7e93a8; font-style: italic; }   /* comment  */
+pre .k { color: #7fb3ff; }                        /* keyword  */
+pre .s { color: #9fd39a; }                        /* string   */
+pre .n { color: #ffcf7a; }                        /* number   */
+pre .f { color: #8fd8ec; }                        /* function */
+code {
+  font-family: var(--mono); font-size: .9em;
+  background: var(--surface-2); padding: 2px 6px; border-radius: 3px;
+  border: 1px solid var(--rule); color: var(--accent-dk);
+}
+pre code { background: none; border: 0; padding: 0; font-size: inherit; color: inherit; }
+
+/* ---------- tables ---------- */
+table {
+  width: 100%; border-collapse: collapse; margin: 22px 0;
+  font-size: 15px; background: var(--surface);
+  border: 1px solid var(--rule);
+}
+th, td { padding: 10px 13px; text-align: left; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th {
+  background: var(--accent); color: #fff; font-size: 12.5px;
+  text-transform: uppercase; letter-spacing: .06em; font-weight: 700;
+}
+tbody tr:nth-child(even) { background: var(--surface-2); }
+tbody tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-family: var(--mono); font-size: 13.5px; }
+.table-scroll { overflow-x: auto; }
+
+/* ---------- lists ---------- */
+ul, ol { padding-left: 22px; }
+li { margin: 7px 0; }
+li::marker { color: var(--accent); }
+ol.steps { counter-reset: s; list-style: none; padding-left: 0; }
+ol.steps > li { counter-increment: s; position: relative; padding-left: 42px; margin: 16px 0; }
+ol.steps > li::before {
+  content: counter(s); position: absolute; left: 0; top: 1px;
+  width: 28px; height: 28px; border-radius: 3px;
+  background: var(--accent); color: #fff; font-weight: 700; font-size: 14px;
+  display: grid; place-items: center;
+}
+
+/* ---------- cards ---------- */
+.grid { display: grid; gap: 16px; margin: 24px 0; }
+.grid.two   { grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); }
+.grid.three { grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); }
+
+.card {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 4px;
+  border-top: 3px solid var(--accent);
+  padding: 18px 20px; box-shadow: var(--shadow);
+  text-decoration: none; color: inherit; display: block;
+}
+a.card:hover { border-color: var(--accent-lt); border-top-color: var(--accent-dk); background: var(--surface-2); }
+.card h3 { margin: 4px 0 6px; font-size: 17px; }
+.card p { margin: 0; font-size: 14.5px; color: var(--ink-soft); }
+.card .n { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 700; letter-spacing: .1em; }
+
+/* ---------- buttons ---------- */
+.btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 28px 0; }
+.btn {
+  display: inline-block; padding: 11px 20px; border-radius: 3px;
+  font-size: 15px; font-weight: 600; text-decoration: none;
+  background: var(--accent); color: #fff; border: 1px solid var(--accent);
+}
+.btn:hover { background: var(--accent-dk); border-color: var(--accent-dk); }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn.ghost:hover { background: var(--surface-2); color: var(--accent-dk); }
+
+/* ---------- checklist ---------- */
+.checklist { list-style: none; padding-left: 0; }
+.checklist li { padding-left: 30px; position: relative; }
+.checklist li::before {
+  content: ""; position: absolute; left: 0; top: 5px;
+  width: 15px; height: 15px; border: 2px solid var(--accent-lt); border-radius: 2px;
+}
+
+/* ---------- footer nav ---------- */
+.pagenav {
+  display: flex; justify-content: space-between; gap: 16px;
+  border-top: 1px solid var(--rule); margin-top: 56px; padding-top: 20px;
+  font-size: 15px;
+}
+.pagenav a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.pagenav a:hover { text-decoration: underline; }
+
+footer.site {
+  border-top: 1px solid var(--rule); margin-top: 40px; padding: 22px 0 60px;
+  color: var(--ink-faint); font-size: 13.5px; text-align: center;
+}
+
+a { color: var(--accent); }
+
+/* ---------- print ---------- */
+@media print {
+  :root { --surface-2:#f4f7fa; --shadow:none; }
+  body { font-size: 11pt; }
+  pre { background:#f2f5f8; color:#101c28; border:1px solid #c8d6e4; }
+  pre .c,pre .k,pre .s,pre .n,pre .f { color:#101c28; }
+  th { background:#e8f0f9; color:#10233a; }
+  .masthead, .pagenav, .btn-row { display: none; }
+  h2 { page-break-after: avoid; }
+  pre, table, .callout, .story { page-break-inside: avoid; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="wrap">
+    <div class="crumbs">
+      <a href="index.html">Numerical Methods</a> <span>/</span>
+      <a href="lab-lecture-04.html">Lab Lecture 4</a> <span>/</span>
+      <span>Assignment 4</span> <span>/</span>
+      <a href="grading.html">Grading</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<p class="eyebrow">Lab Assignment 4 &middot; 100 points</p>
+<h1>Totals from Rates</h1>
+<p class="lede">Implement three integration rules, prove each one's order experimentally, find the round-off
+floor, then audit a storm record and defend your total to a drainage designer.</p>
+
+<div class="meta-row">
+  <span class="chip">Due: next laboratory session</span>
+  <span class="chip">Individual</span>
+  <span class="chip">Python 3</span>
+  <span class="chip hot">AI Prompt Log required</span>
+</div>
+
+<h2>Expected file deliverables</h2>
+<table>
+  <thead><tr><th>File</th><th>Contents</th></tr></thead>
+  <tbody>
+    <tr><td><code>lab04_&lt;surname&gt;.py</code></td><td>All code, runnable top to bottom.</td></tr>
+    <tr><td><code>lab04_report_&lt;surname&gt;.pdf</code></td><td><a href="Lab-Report-Template.docx">Report template</a>. Max 6 pages.</td></tr>
+    <tr><td><code>lab04_ai_prompts_&lt;surname&gt;.docx</code></td><td><a href="AI-Prompt-Log-Template.docx">AI Prompt Log</a> — completed in Word and submitted as .docx.</td></tr>
+    <tr><td><code>figures/</code></td><td>Convergence plot, rate-and-accumulation plot.</td></tr>
+  </tbody>
+</table>
+
+<hr class="rule">
+
+<h2>Part A — Three rules, three orders <span class="chip">30 pts</span></h2>
+
+<ol class="steps">
+  <li>Implement <code>left_rect</code>, <code>trapezoid</code>, and <code>simpson</code> for a callable
+  <span class="v">f</span> on [<span class="v">a</span>,&nbsp;<span class="v">b</span>] with
+  <span class="v">n</span> strips. Simpson must reject odd <span class="v">n</span> with a clear error.</li>
+
+  <li>Test integral:
+  <div class="math" style="font-size:18px">
+    <span class="v">I</span> = &int;<sub>0</sub><sup>2</sup>
+    ( <span class="v">x</span><sup>3</sup> &minus; 3<span class="v">x</span> + 2<span class="v">e</span><sup>&minus;<span class="v">x</span></sup> )
+    <span class="v">dx</span>
+  </div>
+  Compute the exact value analytically by hand and show the work.</li>
+
+  <li>Produce an error-ratio table for each rule at <span class="v">n</span> = 4, 8, 16, 32, 64, 128, 256.
+  Columns: <span class="v">n</span>, estimate, |error|, ratio to the previous error.</li>
+
+  <li>State the limit each ratio column approaches, and confirm it equals 2<sup><span class="v">p</span></sup>
+  for the order <span class="v">p</span> of that rule. Any column that does not converge to its expected value
+  indicates a bug — fix it before submitting.</li>
+
+  <li>Plot all three error curves against <span class="v">h</span> on log-log axes. Fit and report the measured
+  slope of each to two decimals.</li>
+</ol>
+
+<h2>Part B — How you add up the strips <span class="chip">20 pts</span></h2>
+
+<p>Refining the subdivision reduces truncation error and increases the number of additions. This part locates
+the point where the second effect overtakes the first — and shows that where it happens depends on how the
+addition is done.</p>
+
+<ol class="steps">
+  <li>Implement the trapezoidal rule <strong>three ways</strong>, differing only in how the strips are summed:
+    <ol style="margin:6px 0 0">
+      <li>a plain Python <code>for</code> loop with a running total;</li>
+      <li><code>np.sum</code>;</li>
+      <li><code>math.fsum</code>.</li>
+    </ol>
+  </li>
+
+  <li>For <span class="v">n</span> from 10<sup>2</sup> to 10<sup>6</sup>, log-spaced, tabulate the error of all
+  three and plot them together on log-log axes.</li>
+
+  <li>One of the three stops improving and then gets <em>worse</em>. Identify which, report the
+  <span class="v">n</span> at which it bottoms out and the floor it reaches, and explain the mechanism in terms
+  of the number of additions and the size of machine epsilon.</li>
+
+  <li>The other two keep improving to the end of the range. Investigate why, and name the summation algorithm
+  NumPy uses. State what this implies about the common claim that "more strips eventually makes numerical
+  integration worse".</li>
+
+  <li>Repeat for Simpson's rule with <code>np.sum</code>. Report the <span class="v">n</span> at which it
+  reaches machine precision, and the factor by which that is fewer evaluations than the trapezoid needs for its
+  best result. State the practical lesson in one sentence.</li>
+</ol>
+
+<h2>Part C — The storm audit <span class="chip">30 pts</span></h2>
+
+<p>Generate the rain-gauge record with <code>seed</code> = the last two digits of your student number. Note the
+two missing samples — the logger dropped them, exactly as tipping-bucket gauges do.</p>
+
+<pre><code><span class="k">import</span> numpy <span class="k">as</span> np
+
+<span class="k">def</span> <span class="f">storm_record</span>(seed):
+    <span class="s">"""Rainfall intensity at a municipal gauge. t in hours, i in mm/h."""</span>
+    rng = np.random.default_rng(seed)
+    t = np.arange(<span class="n">0</span>, <span class="n">6.0001</span>, <span class="n">1</span>/<span class="n">12</span>)                              <span class="c"># hours, every 5 min</span>
+    i = <span class="n">2</span> + <span class="n">46</span>*np.exp(-((t - <span class="n">2.6</span>)/<span class="n">0.9</span>)**<span class="n">2</span>) \
+          + <span class="n">12</span>*np.exp(-((t - <span class="n">4.4</span>)/<span class="n">0.5</span>)**<span class="n">2</span>)                    <span class="c"># mm/h</span>
+    i = np.maximum(i + rng.normal(<span class="n">0</span>, <span class="n">1.2</span>, t.size), <span class="n">0</span>)
+    keep = np.ones(t.size, <span class="f">bool</span>); keep[[<span class="n">17</span>, <span class="n">44</span>]] = <span class="k">False</span>       <span class="c"># dropped samples</span>
+    <span class="k">return</span> t[keep], i[keep]</code></pre>
+
+<ol class="steps">
+  <li>Plot the intensity hyetograph against time. Mark the two gaps.</li>
+
+  <li>Compute the total rainfall depth with your unequal-spacing trapezoid rule. Report it in millimetres to a
+  defensible number of significant figures, and justify that number.</li>
+
+  <li>Compute the same total the way the original analyst did — average of the first and last reading times the
+  duration. Report the discrepancy in millimetres and in percent. The contributing catchment is 42 hectares;
+  express the discrepancy as a volume in cubic metres of runoff, assuming a runoff coefficient of 0.65.</li>
+
+  <li>Apply Simpson's rule. Since the samples are unequally spaced you must handle the gaps: state your strategy
+  (segment-wise Simpson, or Simpson plus a trapezoid for the odd strip) and implement it. Compare with the
+  trapezoid total.</li>
+
+  <li>Plot the <strong>cumulative</strong> rainfall on the same time axis as the intensity. Report the depth
+  accumulated by hour 2, hour 3 and hour 5. Confirm that the mass curve is steepest where the intensity
+  peaks.</li>
+
+  <li><strong>Close the loop with Lab 1.</strong> Differentiate your cumulative curve numerically and overlay it
+  on the original intensity data. Report the maximum discrepancy and state what the fundamental theorem of
+  calculus predicts here.</li>
+
+  <li>The gauge carries &plusmn;1.2&nbsp;mm/h of random noise. Estimate the resulting uncertainty in the
+  six-hour total and state whether it is large or small compared with the discrepancy in step 3. Write one
+  paragraph on what this says about integrating noisy data versus differentiating it.</li>
+</ol>
+
+<div class="callout trap">
+  <span class="tag">Where marks are lost in Part C</span>
+  <p>Using <code>np.trapz</code> or <code>scipy.integrate</code> for the answer. You may use them <em>only</em>
+  as a cross-check, and you must say so. The assignment asks you to build the rule; a library call proves
+  nothing about your understanding of it.</p>
+</div>
+
+<h2>Part D — AI Prompt Log <span class="chip">20 pts</span></h2>
+
+<div class="callout key">
+  <span class="tag">Required prompt experiment — the unequal-spacing trap</span>
+  <p>Ask an AI assistant:</p>
+  <pre style="margin:10px 0"><code>write a python function for simpson's rule</code></pre>
+  <p>Then, in your log, test its output against the following specific cases and record what happens:</p>
+  <ol style="margin:8px 0 0">
+    <li>An <strong>odd</strong> number of strips. Does it error, silently give a wrong answer, or handle it?</li>
+    <li><strong>Unequally spaced</strong> data like your storm record. Most implementations assume constant
+    <span class="v">h</span>. Feed it your real timestamps and quantify how wrong the answer is.</li>
+    <li>Compare its result on your storm data against your own segment-wise implementation. Report both numbers.</li>
+  </ol>
+  <p style="margin-top:10px">Then write a strong prompt that states the spacing may be unequal, the sample count
+  may be even or odd, and the fallback strategy required. Compare the two outputs, and state one thing the
+  second one still gets wrong or handles awkwardly.</p>
+  <p style="margin-top:10px">Close with two sentences: <em>what class of bug does a generic AI answer produce
+  when your data does not match its unstated assumptions, and how would you catch it in future?</em></p>
+</div>
+
+<h2>Grade breakdown</h2>
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Component</th><th class="num">Pts</th><th>Full marks require</th></tr></thead>
+  <tbody>
+    <tr><td>A — Three rules</td><td class="num">30</td><td>Exact value derived by hand, ratio table converging to 2/4/16, slopes measured.</td></tr>
+    <tr><td>B — Round-off floor</td><td class="num">20</td><td>Floor located, explained by operation count and &epsilon;<sub>mach</sub>, fsum comparison.</td></tr>
+    <tr><td>C — Storm audit</td><td class="num">30</td><td>Gaps handled, discrepancy converted to runoff volume, cumulative curve, differentiation loop closed, noise assessed.</td></tr>
+    <tr><td>D — AI Prompt Log</td><td class="num">20</td><td>Unequal-spacing failure demonstrated with numbers, not just described.</td></tr>
+    <tr><td><strong>Total</strong></td><td class="num"><strong>100</strong></td><td>&minus;5 unlabelled axes &middot; &minus;5 code that does not run &middot; &minus;10 per day late.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Submission checklist</h2>
+<ul class="checklist">
+  <li>Analytical exact value derived and shown.</li>
+  <li>Ratio columns present for all three rules.</li>
+  <li>Library integrators used only as cross-checks, and labelled as such.</li>
+  <li>Rainfall total reported with justified significant figures and the discrepancy expressed as a runoff volume.</li>
+  <li>AI Prompt Log includes the unequal-spacing test with numbers.</li>
+  <li>Zipped as <code>lab04_&lt;surname&gt;.zip</code>.</li>
+</ul>
+
+<div class="pagenav">
+  <span><a href="lab-lecture-04.html">&larr; Lab Lecture 04</a></span>
+  <span><a href="lab-lecture-05.html">Lab Lecture 05 &rarr;</a></span>
+</div>
+
+<footer class="site">Numerical Methods Laboratory &middot; Lab Assignment 4 &middot; Prepared by Engr. Escranda</footer>
+</div>
+</body>
+</html>
+

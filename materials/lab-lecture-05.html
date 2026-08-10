@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab Lecture 5 — Integrals That Earn Their Keep</title>
+<style>
+/* ============================================================
+   Numerical Methods Laboratory — shared stylesheet
+   White and blue. Code blocks remain dark. Print-friendly.
+   ============================================================ */
+
+:root {
+  --bg:        #ffffff;
+  --surface:   #ffffff;
+  --surface-2: #f2f6fb;
+  --surface-3: #e8f0f9;
+  --ink:       #10233a;
+  --ink-soft:  #3d5670;
+  --ink-faint: #6b8199;
+  --rule:      #d5e2f0;
+  --accent:    #0b5fa5;      /* primary blue */
+  --accent-dk: #08436f;
+  --accent-lt: #4a92d0;
+  --ok:        #14705c;
+  --warn:      #8a5b00;
+  --code-bg:   #0d1b2a;      /* black-blue: code stays dark */
+  --code-ink:  #e6edf5;
+  --shadow:    0 1px 2px rgba(16,35,58,.05), 0 6px 20px rgba(16,35,58,.07);
+  --mono: "Cascadia Code", "JetBrains Mono", Consolas, "SF Mono", Menlo, monospace;
+  --sans: "Segoe UI", Inter, system-ui, -apple-system, Roboto, sans-serif;
+  --serif: "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 24px 96px; }
+.wrap-wide { max-width: 1080px; margin: 0 auto; padding: 0 24px 96px; }
+
+/* ---------- masthead ---------- */
+.masthead {
+  border-bottom: 2px solid var(--accent);
+  background: var(--surface);
+  padding: 10px 0;
+  margin-bottom: 40px;
+}
+.masthead .wrap, .masthead .wrap-wide { padding-bottom: 0; }
+.crumbs {
+  font-size: 13px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-faint); display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+}
+.crumbs a { color: var(--accent); text-decoration: none; }
+.crumbs a:hover { text-decoration: underline; }
+
+/* ---------- titles ---------- */
+.eyebrow {
+  font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent); margin: 0 0 10px;
+}
+h1 {
+  font-family: var(--serif);
+  font-size: clamp(30px, 5vw, 43px);
+  line-height: 1.14; margin: 0 0 12px; letter-spacing: -.01em; font-weight: 700;
+  color: var(--ink);
+}
+h2 {
+  font-family: var(--serif);
+  font-size: clamp(23px, 3.2vw, 29px);
+  margin: 52px 0 14px; line-height: 1.2; color: var(--accent-dk);
+  padding-bottom: 8px; border-bottom: 1px solid var(--rule);
+}
+h3 { font-size: 19px; margin: 32px 0 10px; letter-spacing: -.005em; color: var(--ink); }
+h4 { font-size: 15px; margin: 24px 0 8px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .08em; }
+.lede { font-size: 19px; color: var(--ink-soft); line-height: 1.6; margin: 0 0 8px; }
+
+.meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 8px; }
+.chip {
+  font-size: 12.5px; font-weight: 600; letter-spacing: .04em;
+  padding: 4px 11px; border-radius: 3px;
+  background: var(--surface-2); color: var(--ink-soft); border: 1px solid var(--rule);
+}
+.chip.hot { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+hr.rule { border: 0; border-top: 1px solid var(--rule); margin: 44px 0; }
+
+/* ---------- narrative / case blocks ---------- */
+.story {
+  font-family: var(--serif);
+  font-size: 18.5px; line-height: 1.7;
+  background: var(--surface-2);
+  border-left: 3px solid var(--accent);
+  padding: 20px 24px; margin: 26px 0;
+  border-radius: 0 4px 4px 0;
+}
+.story p:first-child { margin-top: 0; }
+.story p:last-child { margin-bottom: 0; }
+.story .who {
+  font-family: var(--sans); font-size: 12.5px; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--accent); font-weight: 700; margin-bottom: 8px;
+}
+
+.callout {
+  border: 1px solid var(--rule); border-radius: 4px;
+  padding: 16px 20px; margin: 22px 0; background: var(--surface);
+}
+.callout .tag { font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+.callout.think { border-left: 3px solid var(--accent-lt); background: var(--surface-2); }
+.callout.think .tag { color: var(--accent); }
+.callout.trap { border-left: 3px solid var(--warn); }
+.callout.trap .tag { color: var(--warn); }
+.callout.key  { border-left: 3px solid var(--accent-dk); background: var(--surface-3); }
+.callout.key .tag { color: var(--accent-dk); }
+.callout p:first-of-type { margin-top: 0; }
+.callout p:last-child { margin-bottom: 0; }
+
+/* ---------- math ---------- */
+.math {
+  font-family: var(--serif); font-size: 20px; text-align: center;
+  padding: 18px 12px; margin: 20px 0; color: var(--ink);
+  background: var(--surface-2); border: 1px solid var(--rule);
+  border-radius: 4px; overflow-x: auto;
+}
+.frac { display: inline-block; vertical-align: middle; text-align: center; margin: 0 .25em; }
+.frac > span { display: block; padding: 0 .35em; }
+.frac .den { border-top: 1.5px solid currentColor; }
+.eqn-no { float: right; color: var(--ink-faint); font-family: var(--sans); font-size: 14px; }
+var, .v { font-family: var(--serif); font-style: italic; }
+
+/* ---------- code (stays dark) ---------- */
+pre {
+  background: var(--code-bg); color: var(--code-ink);
+  padding: 18px 20px; border-radius: 4px; overflow-x: auto;
+  font-family: var(--mono); font-size: 14px; line-height: 1.6;
+  margin: 18px 0; border: 1px solid #0a1622;
+}
+pre .c { color: #7e93a8; font-style: italic; }   /* comment  */
+pre .k { color: #7fb3ff; }                        /* keyword  */
+pre .s { color: #9fd39a; }                        /* string   */
+pre .n { color: #ffcf7a; }                        /* number   */
+pre .f { color: #8fd8ec; }                        /* function */
+code {
+  font-family: var(--mono); font-size: .9em;
+  background: var(--surface-2); padding: 2px 6px; border-radius: 3px;
+  border: 1px solid var(--rule); color: var(--accent-dk);
+}
+pre code { background: none; border: 0; padding: 0; font-size: inherit; color: inherit; }
+
+/* ---------- tables ---------- */
+table {
+  width: 100%; border-collapse: collapse; margin: 22px 0;
+  font-size: 15px; background: var(--surface);
+  border: 1px solid var(--rule);
+}
+th, td { padding: 10px 13px; text-align: left; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th {
+  background: var(--accent); color: #fff; font-size: 12.5px;
+  text-transform: uppercase; letter-spacing: .06em; font-weight: 700;
+}
+tbody tr:nth-child(even) { background: var(--surface-2); }
+tbody tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-family: var(--mono); font-size: 13.5px; }
+.table-scroll { overflow-x: auto; }
+
+/* ---------- lists ---------- */
+ul, ol { padding-left: 22px; }
+li { margin: 7px 0; }
+li::marker { color: var(--accent); }
+ol.steps { counter-reset: s; list-style: none; padding-left: 0; }
+ol.steps > li { counter-increment: s; position: relative; padding-left: 42px; margin: 16px 0; }
+ol.steps > li::before {
+  content: counter(s); position: absolute; left: 0; top: 1px;
+  width: 28px; height: 28px; border-radius: 3px;
+  background: var(--accent); color: #fff; font-weight: 700; font-size: 14px;
+  display: grid; place-items: center;
+}
+
+/* ---------- cards ---------- */
+.grid { display: grid; gap: 16px; margin: 24px 0; }
+.grid.two   { grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); }
+.grid.three { grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); }
+
+.card {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 4px;
+  border-top: 3px solid var(--accent);
+  padding: 18px 20px; box-shadow: var(--shadow);
+  text-decoration: none; color: inherit; display: block;
+}
+a.card:hover { border-color: var(--accent-lt); border-top-color: var(--accent-dk); background: var(--surface-2); }
+.card h3 { margin: 4px 0 6px; font-size: 17px; }
+.card p { margin: 0; font-size: 14.5px; color: var(--ink-soft); }
+.card .n { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 700; letter-spacing: .1em; }
+
+/* ---------- buttons ---------- */
+.btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 28px 0; }
+.btn {
+  display: inline-block; padding: 11px 20px; border-radius: 3px;
+  font-size: 15px; font-weight: 600; text-decoration: none;
+  background: var(--accent); color: #fff; border: 1px solid var(--accent);
+}
+.btn:hover { background: var(--accent-dk); border-color: var(--accent-dk); }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn.ghost:hover { background: var(--surface-2); color: var(--accent-dk); }
+
+/* ---------- checklist ---------- */
+.checklist { list-style: none; padding-left: 0; }
+.checklist li { padding-left: 30px; position: relative; }
+.checklist li::before {
+  content: ""; position: absolute; left: 0; top: 5px;
+  width: 15px; height: 15px; border: 2px solid var(--accent-lt); border-radius: 2px;
+}
+
+/* ---------- footer nav ---------- */
+.pagenav {
+  display: flex; justify-content: space-between; gap: 16px;
+  border-top: 1px solid var(--rule); margin-top: 56px; padding-top: 20px;
+  font-size: 15px;
+}
+.pagenav a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.pagenav a:hover { text-decoration: underline; }
+
+footer.site {
+  border-top: 1px solid var(--rule); margin-top: 40px; padding: 22px 0 60px;
+  color: var(--ink-faint); font-size: 13.5px; text-align: center;
+}
+
+a { color: var(--accent); }
+
+/* ---------- print ---------- */
+@media print {
+  :root { --surface-2:#f4f7fa; --shadow:none; }
+  body { font-size: 11pt; }
+  pre { background:#f2f5f8; color:#101c28; border:1px solid #c8d6e4; }
+  pre .c,pre .k,pre .s,pre .n,pre .f { color:#101c28; }
+  th { background:#e8f0f9; color:#10233a; }
+  .masthead, .pagenav, .btn-row { display: none; }
+  h2 { page-break-after: avoid; }
+  pre, table, .callout, .story { page-break-inside: avoid; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="wrap">
+    <div class="crumbs">
+      <a href="index.html">Numerical Methods</a> <span>/</span>
+      <span>Lab Lecture 5</span> <span>/</span>
+      <a href="lab-assignment-05.html">Assignment 5</a> <span>/</span>
+      <a href="grading.html">Grading</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<p class="eyebrow">Lab Lecture 5 &middot; Lecture topic: Physical Meaning of the Integral</p>
+<h1>Integrals That Earn Their Keep</h1>
+<p class="lede">"Area under the curve" is a picture, not a purpose. In practice the integral is how you get
+discharge from a river survey, work from a force record, the true heating power of a distorted waveform, and the
+point where a shape balances. Same code as Lab 04 — but now you have to decide <em>what to integrate</em>, and
+that is the part that is actually hard.</p>
+
+<div class="meta-row">
+  <span class="chip">3 hours</span>
+  <span class="chip">Discharge, work, RMS, centroid</span>
+  <span class="chip">Weighted integrals</span>
+  <span class="chip hot">Assignment 05 due next session</span>
+</div>
+
+<h2>1. The story: the river that would not be measured</h2>
+
+<div class="story">
+  <div class="who">Case file — hydrology survey, tributary gauging station</div>
+  <p>A survey team needs the discharge of a river: cubic metres per second. You cannot measure that directly.
+  There is no discharge meter.</p>
+  <p>What they can measure is depth at intervals across the channel, and flow velocity at each of those points.
+  They come back with two columns of twelve numbers. The chief asks for one number by Friday.</p>
+</div>
+
+<div class="callout key">
+  <span class="tag">The move that makes it an integral</span>
+  <p>Take a vertical sliver of the cross-section, width <span class="v">dx</span>. Its area is
+  <span class="v">H</span>(<span class="v">x</span>)&nbsp;<span class="v">dx</span>, and the water in it is
+  moving at <span class="v">U</span>(<span class="v">x</span>). So that sliver carries
+  <span class="v">U</span>(<span class="v">x</span>)<span class="v">H</span>(<span class="v">x</span>)&nbsp;<span class="v">dx</span>
+  cubic metres per second. Add up all the slivers:</p>
+  <div class="math" style="margin:12px 0 0">
+    <span class="v">Q</span> = &int;<sub>0</sub><sup><span class="v">B</span></sup>
+    <span class="v">U</span>(<span class="v">x</span>)&nbsp;<span class="v">H</span>(<span class="v">x</span>)&nbsp;<span class="v">dx</span>
+    &nbsp;&nbsp;[m&sup3;/s]
+  </div>
+</div>
+
+<p>Notice what happened. The thing you integrate is not one of your measured columns — it is their
+<em>product</em>. This is the step students skip, and it is the entire difficulty of applied integration:
+translating a physical question into an integrand.</p>
+
+<pre><code><span class="k">import</span> numpy <span class="k">as</span> np
+
+x = np.array([<span class="n">0</span>, <span class="n">1.2</span>, <span class="n">2.4</span>, <span class="n">3.6</span>, <span class="n">4.8</span>, <span class="n">6.0</span>, <span class="n">7.2</span>, <span class="n">8.4</span>, <span class="n">9.6</span>, <span class="n">10.8</span>, <span class="n">12.0</span>])   <span class="c"># m from bank</span>
+H = np.array([<span class="n">0</span>, <span class="n">0.4</span>, <span class="n">0.9</span>, <span class="n">1.5</span>, <span class="n">1.9</span>, <span class="n">2.1</span>, <span class="n">2.0</span>, <span class="n">1.6</span>, <span class="n">1.1</span>, <span class="n">0.5</span>, <span class="n">0.0</span>])       <span class="c"># depth, m</span>
+U = np.array([<span class="n">0</span>, <span class="n">0.3</span>, <span class="n">0.6</span>, <span class="n">0.9</span>, <span class="n">1.1</span>, <span class="n">1.2</span>, <span class="n">1.15</span>, <span class="n">0.95</span>, <span class="n">0.7</span>, <span class="n">0.35</span>, <span class="n">0.0</span>])     <span class="c"># velocity, m/s</span>
+
+<span class="k">def</span> <span class="f">trapz_data</span>(x, y):
+    dx = np.diff(x)
+    <span class="k">return</span> np.sum(dx * (y[:-<span class="n">1</span>] + y[<span class="n">1</span>:]) / <span class="n">2</span>)
+
+A = trapz_data(x, H)          <span class="c"># cross-sectional area, m^2</span>
+Q = trapz_data(x, U * H)      <span class="c"># discharge, m^3/s   <-- the product</span>
+<span class="k">print</span>(<span class="s">f"area  = {A:.3f} m^2"</span>)
+<span class="k">print</span>(<span class="s">f"Q     = {Q:.3f} m^3/s"</span>)
+<span class="k">print</span>(<span class="s">f"U_avg = {Q/A:.3f} m/s"</span>)</code></pre>
+
+<div class="callout trap">
+  <span class="tag">The mistake that gets marked wrong every year</span>
+  <p>Computing the mean velocity as <code>U.mean()</code> and multiplying by the area. That averages velocity
+  over <em>distance across the channel</em>, giving equal weight to the shallow edges and the deep middle. The
+  physically correct mean velocity is <strong>discharge-weighted</strong>: <span class="v">Q</span>/<span class="v">A</span>.
+  Compare the two numbers in the code above — they differ by around 15&nbsp;% on this cross-section, always in
+  the same direction. Ask yourself which way, and why.</p>
+</div>
+
+<h2>2. The pattern behind every application</h2>
+
+<p>Once you see the structure, every integral application in engineering is the same three-step move:</p>
+
+<ol class="steps">
+  <li><strong>Slice.</strong> Cut the problem into pieces so small that the quantity of interest is constant within a piece.</li>
+  <li><strong>Write the contribution of one slice.</strong> This is the integrand, and this is where the physics lives.</li>
+  <li><strong>Sum, then take the limit.</strong> That is the integral — and numerically, that is Lab 04's code.</li>
+</ol>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Quantity</th><th>Integrand (one slice)</th><th>Formula</th><th>Units check</th></tr></thead>
+  <tbody>
+    <tr><td>Distance from speed</td><td><span class="v">v</span>&nbsp;<span class="v">dt</span></td><td>&int;<span class="v">v dt</span></td><td>(m/s)(s) = m</td></tr>
+    <tr><td>Work from a force record</td><td><span class="v">F</span>&nbsp;<span class="v">dx</span></td><td>&int;<span class="v">F dx</span></td><td>(N)(m) = J</td></tr>
+    <tr><td>Energy from power</td><td><span class="v">P</span>&nbsp;<span class="v">dt</span></td><td>&int;<span class="v">P dt</span></td><td>(W)(s) = J</td></tr>
+    <tr><td>Discharge</td><td><span class="v">UH</span>&nbsp;<span class="v">dx</span></td><td>&int;<span class="v">UH dx</span></td><td>(m/s)(m)(m) = m&sup3;/s</td></tr>
+    <tr><td>Mass of a bar of varying density</td><td><span class="v">&rho;A</span>&nbsp;<span class="v">dx</span></td><td>&int;<span class="v">&rho;A dx</span></td><td>(kg/m&sup3;)(m&sup2;)(m) = kg</td></tr>
+    <tr><td>First moment (for centroid)</td><td><span class="v">x</span>&nbsp;<span class="v">dA</span></td><td>&int;<span class="v">x dA</span></td><td>(m)(m&sup2;) = m&sup3;</td></tr>
+    <tr><td>Total rainfall from intensity</td><td><span class="v">i</span>&nbsp;<span class="v">dt</span></td><td>&int;<span class="v">i dt</span></td><td>(mm/h)(h) = mm</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout think">
+  <span class="tag">Units are your correctness check</span>
+  <p>Before writing a single line of code, multiply the units of your integrand by the units of your integration
+  variable. If the result is not the unit of the answer you want, your integrand is wrong and no amount of
+  Simpson's rule will save you. This check costs ten seconds and catches most application errors.</p>
+</div>
+
+<h2>3. Four applications worth knowing</h2>
+
+<h3>3.1 Work from a real force record</h3>
+
+<div class="story">
+  <p>A tensile test machine logs force against extension. The area under that curve is the energy absorbed by
+  the specimen — and the point where the curve turns over is where it started to fail.</p>
+</div>
+
+<pre><code><span class="k">def</span> <span class="f">work_done</span>(x, F):
+    <span class="s">"""Work = integral of F dx. x in metres, F in newtons, result in joules."""</span>
+    <span class="k">return</span> trapz_data(x, F)</code></pre>
+
+<p>Trivial code, non-trivial interpretation: if the force record includes an unloading segment where
+<span class="v">F</span> is still positive but <span class="v">x</span> is <em>decreasing</em>, your
+<code>np.diff</code> goes negative and the integral correctly subtracts that energy back out. The mathematics
+handles signed areas without being told. Most students expect a bug there and instead find physics.</p>
+
+<h3>3.2 RMS — the average that actually matters for power</h3>
+
+<p>A distorted AC waveform does not heat a resistor according to its mean value. It heats according to the root
+mean square:</p>
+
+<div class="math">
+  <span class="v">V</span><sub>rms</sub> = &radic;<span style="border-top:1px solid;padding:0 4px">
+  <span class="frac"><span class="num">1</span><span class="den"><span class="v">T</span></span></span>
+  &int;<sub>0</sub><sup><span class="v">T</span></sup> <span class="v">v</span>(<span class="v">t</span>)<sup>2</sup>&nbsp;<span class="v">dt</span></span>
+</div>
+
+<pre><code><span class="k">def</span> <span class="f">rms</span>(t, v):
+    <span class="s">"""Root-mean-square of a sampled waveform over its full record."""</span>
+    T = t[-<span class="n">1</span>] - t[<span class="n">0</span>]
+    <span class="k">return</span> np.sqrt(trapz_data(t, v**<span class="n">2</span>) / T)</code></pre>
+
+<p>Three lines, and every one of them is a decision. We integrate <span class="v">v</span><sup>2</sup>, not
+<span class="v">v</span> — because power goes as the square. We divide by the period — that is the "mean." We
+take the square root last — that is the "root." For a pure sine of amplitude <span class="v">A</span> you must
+recover <span class="v">A</span>/&radic;2 = 0.7071<span class="v">A</span>; check that before trusting it on
+anything distorted.</p>
+
+<div class="callout think">
+  <span class="tag">Why the mean is the wrong average here</span>
+  <p>The mean of a full sine cycle is exactly zero, yet a sine wave certainly heats a resistor. Averaging the
+  <em>square</em> removes the sign, and the square is what appears in
+  <span class="v">P</span> = <span class="v">v</span><sup>2</sup>/<span class="v">R</span>. Choosing which
+  quantity to average is a physical decision, not a mathematical one — and it is the same decision you made when
+  you weighted river velocity by depth.</p>
+</div>
+
+<h3>3.3 Centroid — where the shape balances</h3>
+
+<div class="math">
+  <span class="v">x&#772;</span> =
+  <span class="frac">
+    <span class="num">&int; <span class="v">x</span>&nbsp;<span class="v">H</span>(<span class="v">x</span>)&nbsp;<span class="v">dx</span></span>
+    <span class="den">&int; <span class="v">H</span>(<span class="v">x</span>)&nbsp;<span class="v">dx</span></span>
+  </span>
+  <span class="eqn-no">first moment / area</span>
+</div>
+
+<pre><code><span class="k">def</span> <span class="f">centroid_x</span>(x, H):
+    <span class="s">"""Horizontal centroid of the area under H(x)."""</span>
+    <span class="k">return</span> trapz_data(x, x * H) / trapz_data(x, H)</code></pre>
+
+<p>The same code computes the centre of mass of a bar with varying density, the centre of pressure on a
+submerged gate, and the mean of a probability distribution. They are one formula wearing three uniforms:
+a weighted average, where the weight is whatever physically accumulates.</p>
+
+<h3>3.4 The average value of a function</h3>
+
+<div class="math">
+  <span class="v">f&#772;</span> =
+  <span class="frac"><span class="num">1</span><span class="den"><span class="v">b</span>&minus;<span class="v">a</span></span></span>
+  &int;<sub><span class="v">a</span></sub><sup><span class="v">b</span></sup> <span class="v">f</span>(<span class="v">x</span>)&nbsp;<span class="v">dx</span>
+</div>
+
+<p>This is the number to report when someone asks for "the average temperature during the test" and your samples
+are unevenly spaced in time. A plain <code>mean()</code> of unevenly spaced samples over-weights whichever
+period you happened to sample densely. The integral version weights by duration, which is what "average over
+time" means.</p>
+
+<h2>4. Where it breaks</h2>
+
+<div class="grid two">
+  <div class="card">
+    <h3>Integrating the wrong thing</h3>
+    <p>By far the most common failure, and no numerical check will catch it. Your discharge code will happily
+    return a number for &int;<span class="v">U dx</span>. It is just not discharge. Do the units check.</p>
+  </div>
+  <div class="card">
+    <h3>Unweighted averages</h3>
+    <p><code>mean()</code> on unevenly spaced or physically weighted data is silently wrong. If the samples are
+    not equally spaced, or the quantity accumulates with a weight, you need the integral.</p>
+  </div>
+  <div class="card">
+    <h3>Sparse sampling near the peak</h3>
+    <p>Twelve points across a river is a coarse grid, and the deep fast middle contributes most of
+    <span class="v">Q</span>. Error concentrates where the integrand is largest. Sample densely where it matters,
+    not uniformly.</p>
+  </div>
+  <div class="card">
+    <h3>Squaring amplifies noise</h3>
+    <p>RMS integrates <span class="v">v</span><sup>2</sup>, so a noise spike contributes its <em>square</em>.
+    A rare glitch that barely shifts the mean can visibly inflate the RMS. Inspect the record before trusting
+    the number.</p>
+  </div>
+</div>
+
+<h2>5. Estimating your error without knowing the answer</h2>
+
+<p>Field data has no exact value to compare against. Use the order of the method instead. Integrate with
+<span class="v">n</span> strips and with <span class="v">n</span>/2 strips; for a second-order rule, Richardson
+extrapolation says the error in the finer estimate is about</p>
+
+<div class="math">
+  <span class="v">E</span> &asymp;
+  <span class="frac"><span class="num"><span class="v">I<sub>n</sub></span> &minus; <span class="v">I</span><sub><span class="v">n</span>/2</sub></span><span class="den">3</span></span>
+  &nbsp;&nbsp;&rArr;&nbsp;&nbsp;
+  <span class="v">I</span><sub>better</sub> &asymp; <span class="v">I<sub>n</sub></span> +
+  <span class="frac"><span class="num"><span class="v">I<sub>n</sub></span> &minus; <span class="v">I</span><sub><span class="v">n</span>/2</sub></span><span class="den">3</span></span>
+</div>
+
+<pre><code><span class="k">def</span> <span class="f">richardson_trapz</span>(x, y):
+    <span class="s">"""Estimate the error of the full-resolution trapezoid using every other point.
+
+    Requires an odd number of samples (so the coarse grid is exact halves).
+    Returns (I_fine, I_coarse, error_estimate, I_improved).
+    """</span>
+    I_fine   = trapz_data(x, y)
+    I_coarse = trapz_data(x[::<span class="n">2</span>], y[::<span class="n">2</span>])
+    err      = (I_fine - I_coarse) / <span class="n">3</span>
+    <span class="k">return</span> I_fine, I_coarse, err, I_fine + err</code></pre>
+
+<p>This gives you an error bar to put on the discharge report — from the data you already have, at the cost of
+one extra summation. It is the single most professional thing you can add to an applied integration result, and
+almost nobody does it.</p>
+
+<h2>6. In-lab exercises (not graded — do them now)</h2>
+
+<ol class="steps">
+  <li>For the river data above, compute <span class="v">Q</span>/<span class="v">A</span> and <code>U.mean()</code>. Report both, state which is correct, and explain the direction of the discrepancy.</li>
+  <li>Verify your <code>rms</code> on a pure sine of amplitude 5 over one full period. You must get 3.5355. If you do not, your period is wrong.</li>
+  <li>Compute the RMS of a square wave of amplitude 5, then a triangle wave of amplitude 5. Rank the three waveforms by RMS and explain the ranking physically.</li>
+  <li>Find the centroid of the river cross-section. Mark it on a plot of the channel. Is it left or right of mid-channel, and does that match the depth profile?</li>
+  <li>Apply <code>richardson_trapz</code> to the discharge and report <span class="v">Q</span> &plusmn; error. How many significant figures does that error justify?</li>
+</ol>
+
+<div class="btn-row">
+  <a class="btn" href="lab-assignment-05.html">Go to Assignment 5 &rarr;</a>
+  <a class="btn ghost" href="lab05_demo.py">Lecture program (lab05_demo.py)</a>
+  <a class="btn ghost" href="lab05_starter.py">starter.py</a>
+  <a class="btn ghost" href="grading.html">Grading &amp; AI policy</a>
+</div>
+
+<h2>7. What to carry into Lab 06</h2>
+<ul>
+  <li>Slice, write one slice's contribution, sum. The integrand carries the physics.</li>
+  <li>Check units before coding; it catches the errors nothing else will.</li>
+  <li>Physical averages are weighted averages — <span class="v">Q</span>/<span class="v">A</span>, not <code>mean()</code>.</li>
+  <li>RMS integrates the square because power goes as the square.</li>
+  <li>Richardson gives you an error bar from data you already have.</li>
+  <li>Next: matrices — what happens when the unknown is not a number but a whole vector of them.</li>
+</ul>
+
+<div class="pagenav">
+  <span><a href="lab-lecture-04.html">&larr; Lab Lecture 04</a></span>
+  <span><a href="lab-lecture-06.html">Lab Lecture 06 — The Matrix as a Machine &rarr;</a></span>
+</div>
+
+<footer class="site">Numerical Methods Laboratory &middot; Lab Lecture 5 &middot; Lecture topic: Physical Meaning of the Integral &middot; Prepared by Engr. Escranda</footer>
+</div>
+</body>
+</html>
+

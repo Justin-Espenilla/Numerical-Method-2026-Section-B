@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab Assignment 1 — Rates of Change from Real Data</title>
+<style>
+/* ============================================================
+   Numerical Methods Laboratory — shared stylesheet
+   White and blue. Code blocks remain dark. Print-friendly.
+   ============================================================ */
+
+:root {
+  --bg:        #ffffff;
+  --surface:   #ffffff;
+  --surface-2: #f2f6fb;
+  --surface-3: #e8f0f9;
+  --ink:       #10233a;
+  --ink-soft:  #3d5670;
+  --ink-faint: #6b8199;
+  --rule:      #d5e2f0;
+  --accent:    #0b5fa5;      /* primary blue */
+  --accent-dk: #08436f;
+  --accent-lt: #4a92d0;
+  --ok:        #14705c;
+  --warn:      #8a5b00;
+  --code-bg:   #0d1b2a;      /* black-blue: code stays dark */
+  --code-ink:  #e6edf5;
+  --shadow:    0 1px 2px rgba(16,35,58,.05), 0 6px 20px rgba(16,35,58,.07);
+  --mono: "Cascadia Code", "JetBrains Mono", Consolas, "SF Mono", Menlo, monospace;
+  --sans: "Segoe UI", Inter, system-ui, -apple-system, Roboto, sans-serif;
+  --serif: "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 24px 96px; }
+.wrap-wide { max-width: 1080px; margin: 0 auto; padding: 0 24px 96px; }
+
+/* ---------- masthead ---------- */
+.masthead {
+  border-bottom: 2px solid var(--accent);
+  background: var(--surface);
+  padding: 10px 0;
+  margin-bottom: 40px;
+}
+.masthead .wrap, .masthead .wrap-wide { padding-bottom: 0; }
+.crumbs {
+  font-size: 13px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-faint); display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+}
+.crumbs a { color: var(--accent); text-decoration: none; }
+.crumbs a:hover { text-decoration: underline; }
+
+/* ---------- titles ---------- */
+.eyebrow {
+  font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent); margin: 0 0 10px;
+}
+h1 {
+  font-family: var(--serif);
+  font-size: clamp(30px, 5vw, 43px);
+  line-height: 1.14; margin: 0 0 12px; letter-spacing: -.01em; font-weight: 700;
+  color: var(--ink);
+}
+h2 {
+  font-family: var(--serif);
+  font-size: clamp(23px, 3.2vw, 29px);
+  margin: 52px 0 14px; line-height: 1.2; color: var(--accent-dk);
+  padding-bottom: 8px; border-bottom: 1px solid var(--rule);
+}
+h3 { font-size: 19px; margin: 32px 0 10px; letter-spacing: -.005em; color: var(--ink); }
+h4 { font-size: 15px; margin: 24px 0 8px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .08em; }
+.lede { font-size: 19px; color: var(--ink-soft); line-height: 1.6; margin: 0 0 8px; }
+
+.meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 8px; }
+.chip {
+  font-size: 12.5px; font-weight: 600; letter-spacing: .04em;
+  padding: 4px 11px; border-radius: 3px;
+  background: var(--surface-2); color: var(--ink-soft); border: 1px solid var(--rule);
+}
+.chip.hot { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+hr.rule { border: 0; border-top: 1px solid var(--rule); margin: 44px 0; }
+
+/* ---------- narrative / case blocks ---------- */
+.story {
+  font-family: var(--serif);
+  font-size: 18.5px; line-height: 1.7;
+  background: var(--surface-2);
+  border-left: 3px solid var(--accent);
+  padding: 20px 24px; margin: 26px 0;
+  border-radius: 0 4px 4px 0;
+}
+.story p:first-child { margin-top: 0; }
+.story p:last-child { margin-bottom: 0; }
+.story .who {
+  font-family: var(--sans); font-size: 12.5px; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--accent); font-weight: 700; margin-bottom: 8px;
+}
+
+.callout {
+  border: 1px solid var(--rule); border-radius: 4px;
+  padding: 16px 20px; margin: 22px 0; background: var(--surface);
+}
+.callout .tag { font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+.callout.think { border-left: 3px solid var(--accent-lt); background: var(--surface-2); }
+.callout.think .tag { color: var(--accent); }
+.callout.trap { border-left: 3px solid var(--warn); }
+.callout.trap .tag { color: var(--warn); }
+.callout.key  { border-left: 3px solid var(--accent-dk); background: var(--surface-3); }
+.callout.key .tag { color: var(--accent-dk); }
+.callout p:first-of-type { margin-top: 0; }
+.callout p:last-child { margin-bottom: 0; }
+
+/* ---------- math ---------- */
+.math {
+  font-family: var(--serif); font-size: 20px; text-align: center;
+  padding: 18px 12px; margin: 20px 0; color: var(--ink);
+  background: var(--surface-2); border: 1px solid var(--rule);
+  border-radius: 4px; overflow-x: auto;
+}
+.frac { display: inline-block; vertical-align: middle; text-align: center; margin: 0 .25em; }
+.frac > span { display: block; padding: 0 .35em; }
+.frac .den { border-top: 1.5px solid currentColor; }
+.eqn-no { float: right; color: var(--ink-faint); font-family: var(--sans); font-size: 14px; }
+var, .v { font-family: var(--serif); font-style: italic; }
+
+/* ---------- code (stays dark) ---------- */
+pre {
+  background: var(--code-bg); color: var(--code-ink);
+  padding: 18px 20px; border-radius: 4px; overflow-x: auto;
+  font-family: var(--mono); font-size: 14px; line-height: 1.6;
+  margin: 18px 0; border: 1px solid #0a1622;
+}
+pre .c { color: #7e93a8; font-style: italic; }   /* comment  */
+pre .k { color: #7fb3ff; }                        /* keyword  */
+pre .s { color: #9fd39a; }                        /* string   */
+pre .n { color: #ffcf7a; }                        /* number   */
+pre .f { color: #8fd8ec; }                        /* function */
+code {
+  font-family: var(--mono); font-size: .9em;
+  background: var(--surface-2); padding: 2px 6px; border-radius: 3px;
+  border: 1px solid var(--rule); color: var(--accent-dk);
+}
+pre code { background: none; border: 0; padding: 0; font-size: inherit; color: inherit; }
+
+/* ---------- tables ---------- */
+table {
+  width: 100%; border-collapse: collapse; margin: 22px 0;
+  font-size: 15px; background: var(--surface);
+  border: 1px solid var(--rule);
+}
+th, td { padding: 10px 13px; text-align: left; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th {
+  background: var(--accent); color: #fff; font-size: 12.5px;
+  text-transform: uppercase; letter-spacing: .06em; font-weight: 700;
+}
+tbody tr:nth-child(even) { background: var(--surface-2); }
+tbody tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-family: var(--mono); font-size: 13.5px; }
+.table-scroll { overflow-x: auto; }
+
+/* ---------- lists ---------- */
+ul, ol { padding-left: 22px; }
+li { margin: 7px 0; }
+li::marker { color: var(--accent); }
+ol.steps { counter-reset: s; list-style: none; padding-left: 0; }
+ol.steps > li { counter-increment: s; position: relative; padding-left: 42px; margin: 16px 0; }
+ol.steps > li::before {
+  content: counter(s); position: absolute; left: 0; top: 1px;
+  width: 28px; height: 28px; border-radius: 3px;
+  background: var(--accent); color: #fff; font-weight: 700; font-size: 14px;
+  display: grid; place-items: center;
+}
+
+/* ---------- cards ---------- */
+.grid { display: grid; gap: 16px; margin: 24px 0; }
+.grid.two   { grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); }
+.grid.three { grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); }
+
+.card {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 4px;
+  border-top: 3px solid var(--accent);
+  padding: 18px 20px; box-shadow: var(--shadow);
+  text-decoration: none; color: inherit; display: block;
+}
+a.card:hover { border-color: var(--accent-lt); border-top-color: var(--accent-dk); background: var(--surface-2); }
+.card h3 { margin: 4px 0 6px; font-size: 17px; }
+.card p { margin: 0; font-size: 14.5px; color: var(--ink-soft); }
+.card .n { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 700; letter-spacing: .1em; }
+
+/* ---------- buttons ---------- */
+.btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 28px 0; }
+.btn {
+  display: inline-block; padding: 11px 20px; border-radius: 3px;
+  font-size: 15px; font-weight: 600; text-decoration: none;
+  background: var(--accent); color: #fff; border: 1px solid var(--accent);
+}
+.btn:hover { background: var(--accent-dk); border-color: var(--accent-dk); }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn.ghost:hover { background: var(--surface-2); color: var(--accent-dk); }
+
+/* ---------- checklist ---------- */
+.checklist { list-style: none; padding-left: 0; }
+.checklist li { padding-left: 30px; position: relative; }
+.checklist li::before {
+  content: ""; position: absolute; left: 0; top: 5px;
+  width: 15px; height: 15px; border: 2px solid var(--accent-lt); border-radius: 2px;
+}
+
+/* ---------- footer nav ---------- */
+.pagenav {
+  display: flex; justify-content: space-between; gap: 16px;
+  border-top: 1px solid var(--rule); margin-top: 56px; padding-top: 20px;
+  font-size: 15px;
+}
+.pagenav a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.pagenav a:hover { text-decoration: underline; }
+
+footer.site {
+  border-top: 1px solid var(--rule); margin-top: 40px; padding: 22px 0 60px;
+  color: var(--ink-faint); font-size: 13.5px; text-align: center;
+}
+
+a { color: var(--accent); }
+
+/* ---------- print ---------- */
+@media print {
+  :root { --surface-2:#f4f7fa; --shadow:none; }
+  body { font-size: 11pt; }
+  pre { background:#f2f5f8; color:#101c28; border:1px solid #c8d6e4; }
+  pre .c,pre .k,pre .s,pre .n,pre .f { color:#101c28; }
+  th { background:#e8f0f9; color:#10233a; }
+  .masthead, .pagenav, .btn-row { display: none; }
+  h2 { page-break-after: avoid; }
+  pre, table, .callout, .story { page-break-inside: avoid; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="wrap">
+    <div class="crumbs">
+      <a href="index.html">Numerical Methods</a> <span>/</span>
+      <a href="lab-lecture-01.html">Lab Lecture 1</a> <span>/</span>
+      <span>Assignment</span> <span>/</span>
+      <a href="grading.html">Grading</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<p class="eyebrow">Lab Assignment 1 &middot; 100 points</p>
+<h1>Rates of Change from Real Data</h1>
+<p class="lede">Build a differentiator, prove its order of accuracy experimentally, then turn it loose on noisy
+sensor data and defend every judgement call you make.</p>
+
+<div class="meta-row">
+  <span class="chip">Due: next laboratory session</span>
+  <span class="chip">Individual</span>
+  <span class="chip">Python 3</span>
+  <span class="chip hot">AI Prompt Log required</span>
+</div>
+
+<h2>Expected file deliverables</h2>
+<table>
+  <thead><tr><th>File</th><th>Contents</th></tr></thead>
+  <tbody>
+    <tr><td><code>lab01_&lt;surname&gt;.py</code></td><td>All code, runnable top to bottom, producing every number and figure you report.</td></tr>
+    <tr><td><code>lab01_report_&lt;surname&gt;.pdf</code></td><td>Write-up using the <a href="Lab-Report-Template.docx">report template</a>. Max 6 pages.</td></tr>
+    <tr><td><code>lab01_ai_prompts_&lt;surname&gt;.docx</code></td><td>AI Prompt Log (Word) — see <a href="AI-Prompt-Log-Template.docx">template</a>.</td></tr>
+    <tr><td><code>figures/</code></td><td>PNG at 150 dpi minimum, axes labelled with units.</td></tr>
+  </tbody>
+</table>
+
+<hr class="rule">
+
+<h2>Part A — Build and verify <span class="chip">30 pts</span></h2>
+
+<ol class="steps">
+  <li>Implement <code>derivative(x, y)</code> exactly as specified in the lab: centred in the interior,
+  <strong>three-point one-sided</strong> (O(<span class="v">h</span><sup>2</sup>)) at both endpoints, returning
+  an array the same length as <code>y</code>. Raise a clear error for unequally spaced <code>x</code>.</li>
+
+  <li>Implement <code>second_derivative(x, y)</code> for the interior points.</li>
+
+  <li><strong>Prove the order.</strong> For <span class="v">f</span>(<span class="v">x</span>) =
+  <span class="v">x</span><sup>3</sup>&nbsp;&minus;&nbsp;2<span class="v">x</span> at
+  <span class="v">x</span> = 1.5, tabulate the true relative error of the forward and centred formulas for
+  <span class="v">h</span> = 0.2, 0.1, 0.05, 0.025, 0.0125. Add a column giving the ratio of consecutive errors.
+  State what each ratio column converges to and why.</li>
+
+  <li>On one log-log plot, show both error curves against <span class="v">h</span>, and fit a straight line to
+  each to measure the slope numerically. Report the measured slopes to two decimals and compare them to the
+  theoretical orders.</li>
+</ol>
+
+<h2>Part B — A physical record <span class="chip">30 pts</span></h2>
+
+<p>Generate the dataset with the code below. It simulates a reservoir stage recorder at a flood-control dam,
+sampling every 5 minutes for 24 hours, with the quantisation and sensor noise of a real stilling-well float
+gauge. Use <code>seed = </code> the last two digits of your student number, so the record is your own.</p>
+
+<pre><code><span class="k">import</span> numpy <span class="k">as</span> np
+
+<span class="k">def</span> <span class="f">reservoir_data</span>(seed):
+    <span class="s">"""Stage record at a flood-control dam. t in hours, h in metres."""</span>
+    rng = np.random.default_rng(seed)
+    t   = np.arange(<span class="n">0</span>, <span class="n">24.0001</span>, <span class="n">1</span>/<span class="n">12</span>)                   <span class="c"># hours, every 5 min</span>
+    h   = <span class="n">12</span> + <span class="n">3.2</span>/(<span class="n">1</span> + np.exp(-(t - <span class="n">10</span>)/<span class="n">1.6</span>)) \
+             - <span class="n">0.02</span>*t + <span class="n">0.15</span>*np.sin(<span class="n">2</span>*np.pi*t/<span class="n">6</span>)          <span class="c"># metres</span>
+    h  += rng.normal(<span class="n">0</span>, <span class="n">0.015</span>, t.size)                    <span class="c"># float-gauge noise</span>
+    h   = np.round(h, <span class="n">2</span>)                                  <span class="c"># recorder rounds to the cm</span>
+    <span class="k">return</span> t, h</code></pre>
+
+<ol class="steps">
+  <li>Plot depth against time. Then plot the raw <span class="v">dh</span>/<span class="v">dt</span> from your
+  differentiator on a second axis. Describe in two sentences what is wrong with the second plot as an engineering
+  result.</li>
+
+  <li>Quantify the damage. The recorder rounds to 0.01&nbsp;m, the float gauge adds &sigma; = 0.015&nbsp;m, and
+  the sampling interval is 1/12&nbsp;h. Using the noise-amplification reasoning from the lab,
+  <strong>predict</strong> the standard deviation of the spurious oscillation in
+  <span class="v">dh</span>/<span class="v">dt</span> <em>before</em> looking at your plot. Then measure it as
+  the standard deviation of (raw derivative &minus; smoothed derivative). Agreement within a factor of two is a
+  pass.</li>
+
+  <li>Apply a centred moving average, sweeping the window from 3 to 25 samples. For each window, record the peak
+  inflow rate and the time at which it occurs. Present this as a table. Handle the ends of the record by edge
+  padding, and state how you did it.</li>
+
+  <li><strong>Make the call.</strong> Choose one window length. Report the peak filling rate in
+  m&sup3;/s (take the reservoir surface area as 4.5&nbsp;&times;&nbsp;10<sup>5</sup>&nbsp;m&sup2;) and the clock
+  time of the peak. Then defend your window in a short paragraph: what does a shorter window include that you do
+  not want, and what does a longer window destroy? For reference, the true underlying peak of the generating
+  function is 0.50&nbsp;m/h at <span class="v">t</span> = 10&nbsp;h before the 6-hour oscillation is added.</li>
+
+  <li>Compute the second derivative of the smoothed record and mark the inflection point on your figure. State
+  its physical meaning for the flood-control operator in plain language.</li>
+</ol>
+
+<div class="callout trap">
+  <span class="tag">Where marks are lost in Part B</span>
+  <p>Reporting a peak rate to four decimal places from data quantised at the centimetre. Your answer cannot be
+  more precise than your instrument. State the number of significant figures your result actually supports, and
+  justify it.</p>
+</div>
+
+<h2>Part C — Sensitivity preview <span class="chip">25 pts</span></h2>
+
+<p>The terminal velocity of a falling body with quadratic drag is</p>
+
+<div class="math">
+  <span class="v">v<sub>t</sub></span> = &radic;<span style="border-top:1px solid;padding:0 2px">
+  <span class="frac"><span class="num">2<span class="v">mg</span></span><span class="den"><span class="v">&rho;C<sub>d</sub>A</span></span></span></span>
+</div>
+
+<p>with <span class="v">m</span> = 75&nbsp;kg, <span class="v">g</span> = 9.81&nbsp;m/s&sup2;,
+<span class="v">&rho;</span> = 1.20&nbsp;kg/m&sup3;, <span class="v">C<sub>d</sub></span> = 1.15,
+<span class="v">A</span> = 0.70&nbsp;m&sup2;.</p>
+
+<ol class="steps">
+  <li>Compute each partial derivative &part;<span class="v">v<sub>t</sub></span>/&part;(parameter)
+  <strong>numerically</strong>, using a centred difference with a perturbation of 1&nbsp;% of each parameter.</li>
+  <li>Derive at least two of them analytically by hand and confirm your numerical values agree to at least four
+  significant figures. Show the hand derivation in the report.</li>
+  <li>Convert each to a <em>dimensionless</em> sensitivity
+  <span class="v">S</span> = (&part;<span class="v">v<sub>t</sub></span>/&part;<span class="v">p</span>)&middot;(<span class="v">p</span>/<span class="v">v<sub>t</sub></span>)
+  and rank the five parameters. Which one would you spend money measuring more precisely, and which would you
+  not bother with? One paragraph.</li>
+  <li>If <span class="v">C<sub>d</sub></span> is known only to &plusmn;10&nbsp;%, what is the resulting
+  uncertainty in <span class="v">v<sub>t</sub></span>? Answer using your sensitivity, then verify by direct
+  evaluation at both extremes.</li>
+</ol>
+
+<h2>Part D — AI Prompt Log <span class="chip">15 pts</span></h2>
+
+<p>You may use any AI assistant. You must log every prompt verbatim in
+<a href="AI-Prompt-Log-Template.docx">the template</a>, including the ones that failed.</p>
+
+<div class="callout key">
+  <span class="tag">Required prompt experiment</span>
+  <p>Ask an AI assistant this weak prompt, verbatim:</p>
+  <pre style="margin:10px 0"><code>python code to find the derivative of data</code></pre>
+  <p>Then write a strong prompt for the same task, specifying: equal spacing, centred interior,
+  three-point one-sided endpoints, return length equal to input, NumPy vectorised, and an error raised on
+  unequal spacing.</p>
+  <p style="margin-top:10px">In your log, place the two outputs side by side and answer:</p>
+  <ol style="margin:8px 0 0">
+    <li>What did the weak prompt force the AI to guess, and which guesses were wrong for this assignment?</li>
+    <li>Did either version use <code>np.gradient</code>? If so — explain what <code>np.gradient</code> does at
+    the endpoints, and why an assignment that asks you to <em>build</em> the method cannot accept it.</li>
+    <li>Name one real flaw in the strong-prompt output. There is always one. Show the corrected line.</li>
+  </ol>
+</div>
+
+<h2>Grade breakdown</h2>
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Component</th><th class="num">Pts</th><th>Full marks require</th></tr></thead>
+  <tbody>
+    <tr><td>A — Build and verify</td><td class="num">30</td><td>Correct endpoint formulas, error-ratio table, measured slopes matching theory.</td></tr>
+    <tr><td>B — Physical record</td><td class="num">30</td><td>Noise predicted before measuring, window sweep tabulated, smoothing choice defended, significant figures honest.</td></tr>
+    <tr><td>C — Sensitivity</td><td class="num">25</td><td>All five partials, two verified analytically, dimensionless ranking with an engineering recommendation.</td></tr>
+    <tr><td>D — AI Prompt Log</td><td class="num">15</td><td>Verbatim prompts, required experiment complete, a genuine flaw identified and corrected.</td></tr>
+    <tr><td><strong>Total</strong></td><td class="num"><strong>100</strong></td><td>&minus;5 unlabelled axes &middot; &minus;5 code that does not run as submitted &middot; &minus;10 per day late.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Submission checklist</h2>
+<ul class="checklist">
+  <li>Code runs top to bottom with only NumPy and Matplotlib installed.</li>
+  <li>Seed set from your student number; state the seed in the report.</li>
+  <li>Every reported number produced by the code, not typed by hand.</li>
+  <li>Units on every axis, every table column, and every result sentence.</li>
+  <li>AI Prompt Log attached, required experiment included.</li>
+  <li>Zipped as <code>lab01_&lt;surname&gt;.zip</code>.</li>
+</ul>
+
+<div class="pagenav">
+  <span><a href="lab-lecture-01.html">&larr; Lab Lecture 01</a></span>
+  <span><a href="lab-lecture-02.html">Lab Lecture 02 &rarr;</a></span>
+</div>
+
+<footer class="site">Numerical Methods Laboratory &middot; Lab Assignment 1 &middot; Prepared by Engr. Escranda</footer>
+</div>
+</body>
+</html>
+

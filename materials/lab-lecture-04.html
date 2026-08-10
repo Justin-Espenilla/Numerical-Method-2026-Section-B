@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab Lecture 4 — The Integral as Accumulation</title>
+<style>
+/* ============================================================
+   Numerical Methods Laboratory — shared stylesheet
+   White and blue. Code blocks remain dark. Print-friendly.
+   ============================================================ */
+
+:root {
+  --bg:        #ffffff;
+  --surface:   #ffffff;
+  --surface-2: #f2f6fb;
+  --surface-3: #e8f0f9;
+  --ink:       #10233a;
+  --ink-soft:  #3d5670;
+  --ink-faint: #6b8199;
+  --rule:      #d5e2f0;
+  --accent:    #0b5fa5;      /* primary blue */
+  --accent-dk: #08436f;
+  --accent-lt: #4a92d0;
+  --ok:        #14705c;
+  --warn:      #8a5b00;
+  --code-bg:   #0d1b2a;      /* black-blue: code stays dark */
+  --code-ink:  #e6edf5;
+  --shadow:    0 1px 2px rgba(16,35,58,.05), 0 6px 20px rgba(16,35,58,.07);
+  --mono: "Cascadia Code", "JetBrains Mono", Consolas, "SF Mono", Menlo, monospace;
+  --sans: "Segoe UI", Inter, system-ui, -apple-system, Roboto, sans-serif;
+  --serif: "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 24px 96px; }
+.wrap-wide { max-width: 1080px; margin: 0 auto; padding: 0 24px 96px; }
+
+/* ---------- masthead ---------- */
+.masthead {
+  border-bottom: 2px solid var(--accent);
+  background: var(--surface);
+  padding: 10px 0;
+  margin-bottom: 40px;
+}
+.masthead .wrap, .masthead .wrap-wide { padding-bottom: 0; }
+.crumbs {
+  font-size: 13px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-faint); display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+}
+.crumbs a { color: var(--accent); text-decoration: none; }
+.crumbs a:hover { text-decoration: underline; }
+
+/* ---------- titles ---------- */
+.eyebrow {
+  font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent); margin: 0 0 10px;
+}
+h1 {
+  font-family: var(--serif);
+  font-size: clamp(30px, 5vw, 43px);
+  line-height: 1.14; margin: 0 0 12px; letter-spacing: -.01em; font-weight: 700;
+  color: var(--ink);
+}
+h2 {
+  font-family: var(--serif);
+  font-size: clamp(23px, 3.2vw, 29px);
+  margin: 52px 0 14px; line-height: 1.2; color: var(--accent-dk);
+  padding-bottom: 8px; border-bottom: 1px solid var(--rule);
+}
+h3 { font-size: 19px; margin: 32px 0 10px; letter-spacing: -.005em; color: var(--ink); }
+h4 { font-size: 15px; margin: 24px 0 8px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .08em; }
+.lede { font-size: 19px; color: var(--ink-soft); line-height: 1.6; margin: 0 0 8px; }
+
+.meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 8px; }
+.chip {
+  font-size: 12.5px; font-weight: 600; letter-spacing: .04em;
+  padding: 4px 11px; border-radius: 3px;
+  background: var(--surface-2); color: var(--ink-soft); border: 1px solid var(--rule);
+}
+.chip.hot { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+hr.rule { border: 0; border-top: 1px solid var(--rule); margin: 44px 0; }
+
+/* ---------- narrative / case blocks ---------- */
+.story {
+  font-family: var(--serif);
+  font-size: 18.5px; line-height: 1.7;
+  background: var(--surface-2);
+  border-left: 3px solid var(--accent);
+  padding: 20px 24px; margin: 26px 0;
+  border-radius: 0 4px 4px 0;
+}
+.story p:first-child { margin-top: 0; }
+.story p:last-child { margin-bottom: 0; }
+.story .who {
+  font-family: var(--sans); font-size: 12.5px; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--accent); font-weight: 700; margin-bottom: 8px;
+}
+
+.callout {
+  border: 1px solid var(--rule); border-radius: 4px;
+  padding: 16px 20px; margin: 22px 0; background: var(--surface);
+}
+.callout .tag { font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+.callout.think { border-left: 3px solid var(--accent-lt); background: var(--surface-2); }
+.callout.think .tag { color: var(--accent); }
+.callout.trap { border-left: 3px solid var(--warn); }
+.callout.trap .tag { color: var(--warn); }
+.callout.key  { border-left: 3px solid var(--accent-dk); background: var(--surface-3); }
+.callout.key .tag { color: var(--accent-dk); }
+.callout p:first-of-type { margin-top: 0; }
+.callout p:last-child { margin-bottom: 0; }
+
+/* ---------- math ---------- */
+.math {
+  font-family: var(--serif); font-size: 20px; text-align: center;
+  padding: 18px 12px; margin: 20px 0; color: var(--ink);
+  background: var(--surface-2); border: 1px solid var(--rule);
+  border-radius: 4px; overflow-x: auto;
+}
+.frac { display: inline-block; vertical-align: middle; text-align: center; margin: 0 .25em; }
+.frac > span { display: block; padding: 0 .35em; }
+.frac .den { border-top: 1.5px solid currentColor; }
+.eqn-no { float: right; color: var(--ink-faint); font-family: var(--sans); font-size: 14px; }
+var, .v { font-family: var(--serif); font-style: italic; }
+
+/* ---------- code (stays dark) ---------- */
+pre {
+  background: var(--code-bg); color: var(--code-ink);
+  padding: 18px 20px; border-radius: 4px; overflow-x: auto;
+  font-family: var(--mono); font-size: 14px; line-height: 1.6;
+  margin: 18px 0; border: 1px solid #0a1622;
+}
+pre .c { color: #7e93a8; font-style: italic; }   /* comment  */
+pre .k { color: #7fb3ff; }                        /* keyword  */
+pre .s { color: #9fd39a; }                        /* string   */
+pre .n { color: #ffcf7a; }                        /* number   */
+pre .f { color: #8fd8ec; }                        /* function */
+code {
+  font-family: var(--mono); font-size: .9em;
+  background: var(--surface-2); padding: 2px 6px; border-radius: 3px;
+  border: 1px solid var(--rule); color: var(--accent-dk);
+}
+pre code { background: none; border: 0; padding: 0; font-size: inherit; color: inherit; }
+
+/* ---------- tables ---------- */
+table {
+  width: 100%; border-collapse: collapse; margin: 22px 0;
+  font-size: 15px; background: var(--surface);
+  border: 1px solid var(--rule);
+}
+th, td { padding: 10px 13px; text-align: left; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th {
+  background: var(--accent); color: #fff; font-size: 12.5px;
+  text-transform: uppercase; letter-spacing: .06em; font-weight: 700;
+}
+tbody tr:nth-child(even) { background: var(--surface-2); }
+tbody tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-family: var(--mono); font-size: 13.5px; }
+.table-scroll { overflow-x: auto; }
+
+/* ---------- lists ---------- */
+ul, ol { padding-left: 22px; }
+li { margin: 7px 0; }
+li::marker { color: var(--accent); }
+ol.steps { counter-reset: s; list-style: none; padding-left: 0; }
+ol.steps > li { counter-increment: s; position: relative; padding-left: 42px; margin: 16px 0; }
+ol.steps > li::before {
+  content: counter(s); position: absolute; left: 0; top: 1px;
+  width: 28px; height: 28px; border-radius: 3px;
+  background: var(--accent); color: #fff; font-weight: 700; font-size: 14px;
+  display: grid; place-items: center;
+}
+
+/* ---------- cards ---------- */
+.grid { display: grid; gap: 16px; margin: 24px 0; }
+.grid.two   { grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); }
+.grid.three { grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); }
+
+.card {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 4px;
+  border-top: 3px solid var(--accent);
+  padding: 18px 20px; box-shadow: var(--shadow);
+  text-decoration: none; color: inherit; display: block;
+}
+a.card:hover { border-color: var(--accent-lt); border-top-color: var(--accent-dk); background: var(--surface-2); }
+.card h3 { margin: 4px 0 6px; font-size: 17px; }
+.card p { margin: 0; font-size: 14.5px; color: var(--ink-soft); }
+.card .n { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 700; letter-spacing: .1em; }
+
+/* ---------- buttons ---------- */
+.btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 28px 0; }
+.btn {
+  display: inline-block; padding: 11px 20px; border-radius: 3px;
+  font-size: 15px; font-weight: 600; text-decoration: none;
+  background: var(--accent); color: #fff; border: 1px solid var(--accent);
+}
+.btn:hover { background: var(--accent-dk); border-color: var(--accent-dk); }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn.ghost:hover { background: var(--surface-2); color: var(--accent-dk); }
+
+/* ---------- checklist ---------- */
+.checklist { list-style: none; padding-left: 0; }
+.checklist li { padding-left: 30px; position: relative; }
+.checklist li::before {
+  content: ""; position: absolute; left: 0; top: 5px;
+  width: 15px; height: 15px; border: 2px solid var(--accent-lt); border-radius: 2px;
+}
+
+/* ---------- footer nav ---------- */
+.pagenav {
+  display: flex; justify-content: space-between; gap: 16px;
+  border-top: 1px solid var(--rule); margin-top: 56px; padding-top: 20px;
+  font-size: 15px;
+}
+.pagenav a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.pagenav a:hover { text-decoration: underline; }
+
+footer.site {
+  border-top: 1px solid var(--rule); margin-top: 40px; padding: 22px 0 60px;
+  color: var(--ink-faint); font-size: 13.5px; text-align: center;
+}
+
+a { color: var(--accent); }
+
+/* ---------- print ---------- */
+@media print {
+  :root { --surface-2:#f4f7fa; --shadow:none; }
+  body { font-size: 11pt; }
+  pre { background:#f2f5f8; color:#101c28; border:1px solid #c8d6e4; }
+  pre .c,pre .k,pre .s,pre .n,pre .f { color:#101c28; }
+  th { background:#e8f0f9; color:#10233a; }
+  .masthead, .pagenav, .btn-row { display: none; }
+  h2 { page-break-after: avoid; }
+  pre, table, .callout, .story { page-break-inside: avoid; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="wrap">
+    <div class="crumbs">
+      <a href="index.html">Numerical Methods</a> <span>/</span>
+      <span>Lab Lecture 4</span> <span>/</span>
+      <a href="lab-assignment-04.html">Assignment 4</a> <span>/</span>
+      <a href="grading.html">Grading</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<p class="eyebrow">Lab Lecture 4 &middot; Lecture topic: Physical Meaning of the Integral</p>
+<h1>The Integral as Accumulation</h1>
+<p class="lede">A derivative tells you how fast something is changing. An integral tells you how much has piled
+up. In the field you will almost never be handed a function to antidifferentiate — you will be handed a logger
+file and asked for a total. This lab turns "area under the curve" into working code with a stated error.</p>
+
+<div class="meta-row">
+  <span class="chip">3 hours</span>
+  <span class="chip">Trapezoid &amp; Simpson</span>
+  <span class="chip">Order of accuracy</span>
+  <span class="chip hot">Assignment 04 due next session</span>
+</div>
+
+<h2>1. The story: the storm that was under-designed</h2>
+
+<div class="story">
+  <div class="who">Case file — municipal drainage, post-flood review</div>
+  <p>A tipping-bucket rain gauge recorded a storm at five-minute intervals for six hours. The design office needs
+  the total rainfall depth to check the detention basin. Somebody has already reported it: they took the average
+  of the first and last intensity readings and multiplied by six hours.</p>
+  <p>That figure is 8 mm. The basin overflowed as though it had received four times as much.</p>
+  <p>The intensity was not constant. It rose sharply, peaked at the height of the storm, and tailed off. The
+  intensity record is a hump, and a straight line between its two ends passes nowhere near it.</p>
+</div>
+
+<div class="callout key">
+  <span class="tag">The physical meaning, stated once</span>
+  <p>If <span class="v">i</span>(<span class="v">t</span>) is a <em>rate</em>, then
+  &int;<span class="v">i</span>&nbsp;<span class="v">dt</span> is the <em>total accumulated</em>. Millimetres per
+  hour integrated over hours gives millimetres of rainfall. The same sentence covers runoff volume from
+  discharge, settlement from strain rate, charge from current, distance from speed, and work from power. The
+  units always tell you what you computed — multiply the units of the <span class="v">y</span>-axis by the units
+  of the <span class="v">x</span>-axis.</p>
+</div>
+
+<h2>2. From the Riemann sum to something useful</h2>
+
+<p>Lecture defined the integral as a limit of rectangles. Delete the limit — as we did with the derivative — and
+you have a method. But the shape you use to fill each strip matters enormously.</p>
+
+<h3>Rectangles: correct, and bad</h3>
+
+<pre><code><span class="k">import</span> numpy <span class="k">as</span> np
+
+<span class="k">def</span> <span class="f">left_rect</span>(f, a, b, n):
+    <span class="s">"""Left Riemann sum with n strips. Error O(h) — first order."""</span>
+    h = (b - a) / n
+    x = a + h*np.arange(n)          <span class="c"># left edge of every strip</span>
+    <span class="k">return</span> h * np.sum(f(x))</code></pre>
+
+<p>Try it on &int;<sub>0</sub><sup>1</sup> <span class="v">e<sup>x</sup></span>&nbsp;<span class="v">dx</span> =
+1.71828&hellip; With <span class="v">n</span> = 10 you get about 1.6338 — a 4.9&nbsp;% error. Double
+<span class="v">n</span> and the error roughly halves. To get four decimal places you would need tens of
+thousands of strips. The rectangle wastes information: it uses the height at one edge and ignores the other.</p>
+
+<h3>Trapezoids: use both ends</h3>
+
+<div class="math">
+  <span class="v">I</span> &asymp;
+  <span class="frac"><span class="num"><span class="v">h</span></span><span class="den">2</span></span>
+  [ <span class="v">f</span><sub>0</sub> + 2<span class="v">f</span><sub>1</sub> + 2<span class="v">f</span><sub>2</sub>
+  + &hellip; + 2<span class="v">f</span><sub><span class="v">n</span>&minus;1</sub> + <span class="v">f<sub>n</sub></span> ]
+  <span class="eqn-no">O(h<sup>2</sup>)</span>
+</div>
+
+<pre><code><span class="k">def</span> <span class="f">trapezoid</span>(f, a, b, n):
+    <span class="s">"""Composite trapezoidal rule with n strips. Error O(h**2)."""</span>
+    h = (b - a) / n
+    x = np.linspace(a, b, n + <span class="n">1</span>)
+    y = f(x)
+    <span class="k">return</span> h * (y[<span class="n">0</span>]/<span class="n">2</span> + y[<span class="n">1</span>:-<span class="n">1</span>].sum() + y[-<span class="n">1</span>]/<span class="n">2</span>)</code></pre>
+
+<div class="callout think">
+  <span class="tag">Why the interior points count twice</span>
+  <p>Every interior point is the right edge of one trapezoid and the left edge of the next, so it appears in two
+  strips. The two endpoints belong to one strip each. That is the whole meaning of the 1-2-2-&hellip;-2-1 pattern
+  — it is not a formula to memorise, it is a count of how many trapezoids touch each sample.</p>
+</div>
+
+<p>Same integral, <span class="v">n</span> = 10: error drops to about 0.14&nbsp;%. Thirty-five times better than
+rectangles for exactly the same number of function evaluations.</p>
+
+<h3>Simpson's rule: fit a parabola instead of a line</h3>
+
+<p>A straight line through two points is a poor model of a curve. A parabola through <em>three</em> points is
+much better — and costs nothing extra, because you already have those three points.</p>
+
+<div class="math">
+  <span class="v">I</span> &asymp;
+  <span class="frac"><span class="num"><span class="v">h</span></span><span class="den">3</span></span>
+  [ <span class="v">f</span><sub>0</sub> + 4<span class="v">f</span><sub>1</sub> + 2<span class="v">f</span><sub>2</sub>
+  + 4<span class="v">f</span><sub>3</sub> + &hellip; + 4<span class="v">f</span><sub><span class="v">n</span>&minus;1</sub>
+  + <span class="v">f<sub>n</sub></span> ]
+  <span class="eqn-no">O(h<sup>4</sup>)</span>
+</div>
+
+<pre><code><span class="k">def</span> <span class="f">simpson</span>(f, a, b, n):
+    <span class="s">"""Composite Simpson's 1/3 rule. n MUST be even. Error O(h**4)."""</span>
+    <span class="k">if</span> n % <span class="n">2</span> != <span class="n">0</span>:
+        <span class="k">raise</span> <span class="f">ValueError</span>(<span class="s">"Simpson's 1/3 rule needs an even number of strips."</span>)
+    h = (b - a) / n
+    x = np.linspace(a, b, n + <span class="n">1</span>)
+    y = f(x)
+    <span class="k">return</span> h/<span class="n">3</span> * (y[<span class="n">0</span>] + <span class="n">4</span>*y[<span class="n">1</span>:-<span class="n">1</span>:<span class="n">2</span>].sum() + <span class="n">2</span>*y[<span class="n">2</span>:-<span class="n">1</span>:<span class="n">2</span>].sum() + y[-<span class="n">1</span>])</code></pre>
+
+<p>Same integral, <span class="v">n</span> = 10: relative error about 1&times;10<sup>&minus;6</sup>. Compare the
+three at a glance:</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Method</th><th>Shape used</th><th>Error order</th><th class="num">&epsilon;<sub>t</sub> at n = 10</th><th class="num">&epsilon;<sub>t</sub> at n = 20</th><th>Halving h divides error by</th></tr></thead>
+  <tbody>
+    <tr><td>Left rectangle</td><td>flat top</td><td>O(<span class="v">h</span>)</td><td class="num">4.9 %</td><td class="num">2.5 %</td><td class="num">2</td></tr>
+    <tr><td>Trapezoid</td><td>straight line</td><td>O(<span class="v">h</span><sup>2</sup>)</td><td class="num">0.14 %</td><td class="num">0.035 %</td><td class="num">4</td></tr>
+    <tr><td>Simpson 1/3</td><td>parabola</td><td>O(<span class="v">h</span><sup>4</sup>)</td><td class="num">1.1e&minus;4 %</td><td class="num">7.0e&minus;6 %</td><td class="num">16</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout key">
+  <span class="tag">This table is the whole lab</span>
+  <p>Three methods, identical cost in function evaluations, five orders of magnitude apart in accuracy. The
+  difference is entirely in <em>what shape you assume the function has between your samples</em>. Every
+  integration rule you will ever meet is that same choice, made more or less cleverly.</p>
+</div>
+
+<h2>3. Verify the order — do not take my word for it</h2>
+
+<p>The error-halving column above is a testable claim. Test it:</p>
+
+<pre><code><span class="k">def</span> <span class="f">order_study</span>(method, f, a, b, exact, ns=(<span class="n">4</span>, <span class="n">8</span>, <span class="n">16</span>, <span class="n">32</span>, <span class="n">64</span>, <span class="n">128</span>)):
+    <span class="s">"""Print error and the ratio between consecutive errors."""</span>
+    prev = <span class="k">None</span>
+    <span class="k">print</span>(<span class="s">f"{'n':&gt;6} {'estimate':&gt;18} {'|error|':&gt;12} {'ratio':&gt;8}"</span>)
+    <span class="k">for</span> n <span class="k">in</span> ns:
+        est = method(f, a, b, n)
+        err = <span class="f">abs</span>(est - exact)
+        ratio = prev/err <span class="k">if</span> prev <span class="k">else</span> <span class="f">float</span>(<span class="s">'nan'</span>)
+        <span class="k">print</span>(<span class="s">f"{n:6d} {est:18.12f} {err:12.3e} {ratio:8.2f}"</span>)
+        prev = err
+
+order_study(trapezoid, np.exp, <span class="n">0</span>, <span class="n">1</span>, np.e - <span class="n">1</span>)
+order_study(simpson,   np.exp, <span class="n">0</span>, <span class="n">1</span>, np.e - <span class="n">1</span>)</code></pre>
+
+<p>The ratio column should march to 4.00 for the trapezoid and 16.00 for Simpson. If you get 2.00 where you
+expected 4.00, you have a bug — most likely a wrong <span class="v">h</span> or an off-by-one in the endpoints.
+<strong>This ratio test is the single most reliable debugging tool in numerical methods</strong>, and it needs no
+knowledge of the right answer beyond one reference value.</p>
+
+<div class="callout trap">
+  <span class="tag">When the ratio suddenly collapses</span>
+  <p>Push <span class="v">n</span> to 10<sup>6</sup> and Simpson's ratio stops being 16 and starts wandering.
+  You have hit the round-off floor from Lab 01 — you are now adding a million numbers, each with its own tiny
+  representation error, and the accumulated noise exceeds the truncation error you were trying to remove. The
+  V-curve is back. There is a best <span class="v">n</span>, and more is not better.</p>
+</div>
+
+<h2>4. Integrating data instead of functions</h2>
+
+<p>Back to the storm. There is no <span class="v">i</span>(<span class="v">t</span>) — there are 72 numbers.
+The trapezoidal rule does not care: it only ever used the samples.</p>
+
+<pre><code><span class="k">def</span> <span class="f">trapz_data</span>(x, y):
+    <span class="s">"""Trapezoidal rule for tabulated data. Handles unequal spacing."""</span>
+    x, y = np.asarray(x, <span class="f">float</span>), np.asarray(y, <span class="f">float</span>)
+    dx = np.diff(x)
+    <span class="k">return</span> np.sum(dx * (y[:-<span class="n">1</span>] + y[<span class="n">1</span>:]) / <span class="n">2</span>)</code></pre>
+
+<p>Notice this version needs no constant <span class="v">h</span> at all — each strip carries its own width. That
+matters more than it sounds: field data is full of gaps where the logger dropped a sample, and a rule that
+assumes even spacing will silently return the wrong total.</p>
+
+<h3>The cumulative integral: the answer at every instant</h3>
+
+<p>Often the total is less interesting than the running total — fuel burnt by hour 6, rainfall accumulated by
+3 p.m., charge delivered so far.</p>
+
+<pre><code><span class="k">def</span> <span class="f">cumulative_trapz</span>(x, y):
+    <span class="s">"""Running integral. Returns an array the same length as x, starting at 0."""</span>
+    dx = np.diff(x)
+    strips = dx * (y[:-<span class="n">1</span>] + y[<span class="n">1</span>:]) / <span class="n">2</span>
+    <span class="k">return</span> np.concatenate(([<span class="n">0.0</span>], np.cumsum(strips)))</code></pre>
+
+<p>Plot the rate and its running total on the same time axis, and the relationship from lecture becomes visual:
+the accumulation curve is <em>steepest where the rate is highest</em>, and <em>flat where the rate is zero</em>.
+Differentiating the accumulation curve with your Lab 01 code returns the original rate — the fundamental theorem
+of calculus, demonstrated numerically in two lines.</p>
+
+<h3>Simpson on data, and the odd-count problem</h3>
+
+<p>Simpson's 1/3 rule consumes points in pairs of strips, so it needs an <em>even</em> number of strips — an odd
+number of samples. Real data does not consult you about this. Three honest options:</p>
+
+<ol class="steps">
+  <li>Apply Simpson 1/3 to the first <span class="v">n</span>&minus;1 strips and the trapezoid to the last one. Simple, and it degrades only the final strip.</li>
+  <li>Apply Simpson's <strong>3/8 rule</strong> (which uses three strips) to the last three and 1/3 to the rest. Keeps fourth-order accuracy throughout.</li>
+  <li>Drop a data point. Never do this without saying so in the report.</li>
+</ol>
+
+<h2>5. Where it breaks</h2>
+
+<div class="grid two">
+  <div class="card">
+    <h3>Kinks and discontinuities</h3>
+    <p>Simpson fits a parabola through three points. If a valve slammed shut between two samples, no parabola
+    describes that, and fourth-order accuracy evaporates. Integrate each smooth segment separately and add.</p>
+  </div>
+  <div class="card">
+    <h3>Too few samples</h3>
+    <p>The rules interpolate between your data. If the true curve wiggles between samples, no method can know.
+    Accuracy is limited by sampling rate, not by cleverness — this is the integration counterpart of Nyquist.</p>
+  </div>
+  <div class="card">
+    <h3>Infinite or singular integrands</h3>
+    <p>&int;<sub>0</sub><sup>1</sup><span class="v">dx</span>/&radic;<span class="v">x</span> is finite, but
+    <span class="v">f</span>(0) is infinite and your code returns <code>inf</code>. Needs a substitution or an
+    open rule that never evaluates the endpoint.</p>
+  </div>
+  <div class="card">
+    <h3>Round-off at enormous n</h3>
+    <p>Millions of strips accumulate representation error. Use <code>math.fsum</code> for compensated summation,
+    or better, use a higher-order rule with fewer strips.</p>
+  </div>
+</div>
+
+<div class="callout think">
+  <span class="tag">Integration is forgiving where differentiation is brutal</span>
+  <p>Lab 01 showed that noise <em>destroys</em> derivatives, because you divide small differences by a small
+  <span class="v">h</span>. Integration does the opposite: it <em>averages</em>, and random noise partly cancels
+  over the sum. Integrating a noisy signal is one of the safest things you can do to it. Remember this asymmetry
+  — when you have a choice between a formulation that differentiates data and one that integrates it,
+  <strong>integrate</strong>.</p>
+</div>
+
+<h2>6. In-lab exercises (not graded — do them now)</h2>
+
+<ol class="steps">
+  <li>Run the ratio study for the left rectangle rule and confirm it converges to 2.00.</li>
+  <li>Integrate &int;<sub>0</sub><sup>&pi;</sup> sin&nbsp;<span class="v">x</span>&nbsp;<span class="v">dx</span> = 2 with all three rules at <span class="v">n</span> = 4. Simpson is nearly exact. Explain why, using the shape it assumes.</li>
+  <li>Integrate <span class="v">x</span><sup>3</sup> from 0 to 2 with Simpson at <span class="v">n</span> = 2. It is exact, even though Simpson only fits parabolas. Explain that surprise. (Hint: look at the error term — it involves the <em>fourth</em> derivative.)</li>
+  <li>Push <span class="v">n</span> to 10<sup>7</sup> on the trapezoid and find where the error stops improving. Report the best <span class="v">n</span> and the floor.</li>
+  <li>Generate a noisy sine, integrate it, and compare with the exact integral. Then differentiate the same noisy data. Put the two errors side by side and write one sentence about the asymmetry.</li>
+</ol>
+
+<div class="btn-row">
+  <a class="btn" href="lab-assignment-04.html">Go to Assignment 4 &rarr;</a>
+  <a class="btn ghost" href="lab04_demo.py">Lecture program (lab04_demo.py)</a>
+  <a class="btn ghost" href="lab04_starter.py">starter.py</a>
+  <a class="btn ghost" href="grading.html">Grading &amp; AI policy</a>
+</div>
+
+<h2>7. What to carry into Lab 05</h2>
+<ul>
+  <li>An integral of a rate is a total; the units prove what you computed.</li>
+  <li>The rule you pick is a statement about the shape between samples: flat, straight, or parabolic.</li>
+  <li>The error-ratio test (2, 4, 16) verifies your implementation without needing an exact answer.</li>
+  <li>Data-driven integration needs no formula and tolerates unequal spacing.</li>
+  <li>Integration suppresses noise; differentiation amplifies it.</li>
+  <li>Next lab: the same machinery pointed at work, centroids, RMS values, and areas that are not under a graph at all.</li>
+</ul>
+
+<div class="pagenav">
+  <span><a href="lab-lecture-03.html">&larr; Lab Lecture 03</a></span>
+  <span><a href="lab-lecture-05.html">Lab Lecture 05 — Integrals That Earn Their Keep &rarr;</a></span>
+</div>
+
+<footer class="site">Numerical Methods Laboratory &middot; Lab Lecture 4 &middot; Lecture topic: Physical Meaning of the Integral &middot; Prepared by Engr. Escranda</footer>
+</div>
+</body>
+</html>
+

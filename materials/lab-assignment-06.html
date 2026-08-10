@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab Assignment 6 — Solving a Truss</title>
+<style>
+/* ============================================================
+   Numerical Methods Laboratory — shared stylesheet
+   White and blue. Code blocks remain dark. Print-friendly.
+   ============================================================ */
+
+:root {
+  --bg:        #ffffff;
+  --surface:   #ffffff;
+  --surface-2: #f2f6fb;
+  --surface-3: #e8f0f9;
+  --ink:       #10233a;
+  --ink-soft:  #3d5670;
+  --ink-faint: #6b8199;
+  --rule:      #d5e2f0;
+  --accent:    #0b5fa5;      /* primary blue */
+  --accent-dk: #08436f;
+  --accent-lt: #4a92d0;
+  --ok:        #14705c;
+  --warn:      #8a5b00;
+  --code-bg:   #0d1b2a;      /* black-blue: code stays dark */
+  --code-ink:  #e6edf5;
+  --shadow:    0 1px 2px rgba(16,35,58,.05), 0 6px 20px rgba(16,35,58,.07);
+  --mono: "Cascadia Code", "JetBrains Mono", Consolas, "SF Mono", Menlo, monospace;
+  --sans: "Segoe UI", Inter, system-ui, -apple-system, Roboto, sans-serif;
+  --serif: "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 24px 96px; }
+.wrap-wide { max-width: 1080px; margin: 0 auto; padding: 0 24px 96px; }
+
+/* ---------- masthead ---------- */
+.masthead {
+  border-bottom: 2px solid var(--accent);
+  background: var(--surface);
+  padding: 10px 0;
+  margin-bottom: 40px;
+}
+.masthead .wrap, .masthead .wrap-wide { padding-bottom: 0; }
+.crumbs {
+  font-size: 13px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-faint); display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+}
+.crumbs a { color: var(--accent); text-decoration: none; }
+.crumbs a:hover { text-decoration: underline; }
+
+/* ---------- titles ---------- */
+.eyebrow {
+  font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent); margin: 0 0 10px;
+}
+h1 {
+  font-family: var(--serif);
+  font-size: clamp(30px, 5vw, 43px);
+  line-height: 1.14; margin: 0 0 12px; letter-spacing: -.01em; font-weight: 700;
+  color: var(--ink);
+}
+h2 {
+  font-family: var(--serif);
+  font-size: clamp(23px, 3.2vw, 29px);
+  margin: 52px 0 14px; line-height: 1.2; color: var(--accent-dk);
+  padding-bottom: 8px; border-bottom: 1px solid var(--rule);
+}
+h3 { font-size: 19px; margin: 32px 0 10px; letter-spacing: -.005em; color: var(--ink); }
+h4 { font-size: 15px; margin: 24px 0 8px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .08em; }
+.lede { font-size: 19px; color: var(--ink-soft); line-height: 1.6; margin: 0 0 8px; }
+
+.meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 8px; }
+.chip {
+  font-size: 12.5px; font-weight: 600; letter-spacing: .04em;
+  padding: 4px 11px; border-radius: 3px;
+  background: var(--surface-2); color: var(--ink-soft); border: 1px solid var(--rule);
+}
+.chip.hot { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+hr.rule { border: 0; border-top: 1px solid var(--rule); margin: 44px 0; }
+
+/* ---------- narrative / case blocks ---------- */
+.story {
+  font-family: var(--serif);
+  font-size: 18.5px; line-height: 1.7;
+  background: var(--surface-2);
+  border-left: 3px solid var(--accent);
+  padding: 20px 24px; margin: 26px 0;
+  border-radius: 0 4px 4px 0;
+}
+.story p:first-child { margin-top: 0; }
+.story p:last-child { margin-bottom: 0; }
+.story .who {
+  font-family: var(--sans); font-size: 12.5px; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--accent); font-weight: 700; margin-bottom: 8px;
+}
+
+.callout {
+  border: 1px solid var(--rule); border-radius: 4px;
+  padding: 16px 20px; margin: 22px 0; background: var(--surface);
+}
+.callout .tag { font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+.callout.think { border-left: 3px solid var(--accent-lt); background: var(--surface-2); }
+.callout.think .tag { color: var(--accent); }
+.callout.trap { border-left: 3px solid var(--warn); }
+.callout.trap .tag { color: var(--warn); }
+.callout.key  { border-left: 3px solid var(--accent-dk); background: var(--surface-3); }
+.callout.key .tag { color: var(--accent-dk); }
+.callout p:first-of-type { margin-top: 0; }
+.callout p:last-child { margin-bottom: 0; }
+
+/* ---------- math ---------- */
+.math {
+  font-family: var(--serif); font-size: 20px; text-align: center;
+  padding: 18px 12px; margin: 20px 0; color: var(--ink);
+  background: var(--surface-2); border: 1px solid var(--rule);
+  border-radius: 4px; overflow-x: auto;
+}
+.frac { display: inline-block; vertical-align: middle; text-align: center; margin: 0 .25em; }
+.frac > span { display: block; padding: 0 .35em; }
+.frac .den { border-top: 1.5px solid currentColor; }
+.eqn-no { float: right; color: var(--ink-faint); font-family: var(--sans); font-size: 14px; }
+var, .v { font-family: var(--serif); font-style: italic; }
+
+/* ---------- code (stays dark) ---------- */
+pre {
+  background: var(--code-bg); color: var(--code-ink);
+  padding: 18px 20px; border-radius: 4px; overflow-x: auto;
+  font-family: var(--mono); font-size: 14px; line-height: 1.6;
+  margin: 18px 0; border: 1px solid #0a1622;
+}
+pre .c { color: #7e93a8; font-style: italic; }   /* comment  */
+pre .k { color: #7fb3ff; }                        /* keyword  */
+pre .s { color: #9fd39a; }                        /* string   */
+pre .n { color: #ffcf7a; }                        /* number   */
+pre .f { color: #8fd8ec; }                        /* function */
+code {
+  font-family: var(--mono); font-size: .9em;
+  background: var(--surface-2); padding: 2px 6px; border-radius: 3px;
+  border: 1px solid var(--rule); color: var(--accent-dk);
+}
+pre code { background: none; border: 0; padding: 0; font-size: inherit; color: inherit; }
+
+/* ---------- tables ---------- */
+table {
+  width: 100%; border-collapse: collapse; margin: 22px 0;
+  font-size: 15px; background: var(--surface);
+  border: 1px solid var(--rule);
+}
+th, td { padding: 10px 13px; text-align: left; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th {
+  background: var(--accent); color: #fff; font-size: 12.5px;
+  text-transform: uppercase; letter-spacing: .06em; font-weight: 700;
+}
+tbody tr:nth-child(even) { background: var(--surface-2); }
+tbody tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-family: var(--mono); font-size: 13.5px; }
+.table-scroll { overflow-x: auto; }
+
+/* ---------- lists ---------- */
+ul, ol { padding-left: 22px; }
+li { margin: 7px 0; }
+li::marker { color: var(--accent); }
+ol.steps { counter-reset: s; list-style: none; padding-left: 0; }
+ol.steps > li { counter-increment: s; position: relative; padding-left: 42px; margin: 16px 0; }
+ol.steps > li::before {
+  content: counter(s); position: absolute; left: 0; top: 1px;
+  width: 28px; height: 28px; border-radius: 3px;
+  background: var(--accent); color: #fff; font-weight: 700; font-size: 14px;
+  display: grid; place-items: center;
+}
+
+/* ---------- cards ---------- */
+.grid { display: grid; gap: 16px; margin: 24px 0; }
+.grid.two   { grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); }
+.grid.three { grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); }
+
+.card {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 4px;
+  border-top: 3px solid var(--accent);
+  padding: 18px 20px; box-shadow: var(--shadow);
+  text-decoration: none; color: inherit; display: block;
+}
+a.card:hover { border-color: var(--accent-lt); border-top-color: var(--accent-dk); background: var(--surface-2); }
+.card h3 { margin: 4px 0 6px; font-size: 17px; }
+.card p { margin: 0; font-size: 14.5px; color: var(--ink-soft); }
+.card .n { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 700; letter-spacing: .1em; }
+
+/* ---------- buttons ---------- */
+.btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 28px 0; }
+.btn {
+  display: inline-block; padding: 11px 20px; border-radius: 3px;
+  font-size: 15px; font-weight: 600; text-decoration: none;
+  background: var(--accent); color: #fff; border: 1px solid var(--accent);
+}
+.btn:hover { background: var(--accent-dk); border-color: var(--accent-dk); }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn.ghost:hover { background: var(--surface-2); color: var(--accent-dk); }
+
+/* ---------- checklist ---------- */
+.checklist { list-style: none; padding-left: 0; }
+.checklist li { padding-left: 30px; position: relative; }
+.checklist li::before {
+  content: ""; position: absolute; left: 0; top: 5px;
+  width: 15px; height: 15px; border: 2px solid var(--accent-lt); border-radius: 2px;
+}
+
+/* ---------- footer nav ---------- */
+.pagenav {
+  display: flex; justify-content: space-between; gap: 16px;
+  border-top: 1px solid var(--rule); margin-top: 56px; padding-top: 20px;
+  font-size: 15px;
+}
+.pagenav a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.pagenav a:hover { text-decoration: underline; }
+
+footer.site {
+  border-top: 1px solid var(--rule); margin-top: 40px; padding: 22px 0 60px;
+  color: var(--ink-faint); font-size: 13.5px; text-align: center;
+}
+
+a { color: var(--accent); }
+
+/* ---------- print ---------- */
+@media print {
+  :root { --surface-2:#f4f7fa; --shadow:none; }
+  body { font-size: 11pt; }
+  pre { background:#f2f5f8; color:#101c28; border:1px solid #c8d6e4; }
+  pre .c,pre .k,pre .s,pre .n,pre .f { color:#101c28; }
+  th { background:#e8f0f9; color:#10233a; }
+  .masthead, .pagenav, .btn-row { display: none; }
+  h2 { page-break-after: avoid; }
+  pre, table, .callout, .story { page-break-inside: avoid; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="wrap">
+    <div class="crumbs">
+      <a href="index.html">Numerical Methods</a> <span>/</span>
+      <a href="lab-lecture-06.html">Lab Lecture 6</a> <span>/</span>
+      <span>Assignment 6</span> <span>/</span>
+      <a href="grading.html">Grading</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<p class="eyebrow">Lab Assignment 6 &middot; 100 points</p>
+<h1>Solving a Truss</h1>
+<p class="lede">Build a Gauss elimination solver with partial pivoting, prove that pivoting is not optional,
+assemble the equilibrium equations of a real truss, and verify the answer by structural equilibrium rather than
+by trusting the solver.</p>
+
+<div class="meta-row">
+  <span class="chip">Due: next laboratory session</span>
+  <span class="chip">Individual</span>
+  <span class="chip">Python 3</span>
+  <span class="chip hot">AI Prompt Log (Word) required</span>
+</div>
+
+<h2>Expected file deliverables</h2>
+
+<p>Submit one ZIP archive named <code>lab06_&lt;surname&gt;.zip</code> containing exactly these items:</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>#</th><th>File name</th><th>Format</th><th>Contents</th></tr></thead>
+  <tbody>
+    <tr><td class="num">1</td><td><code>lab06_&lt;surname&gt;.py</code></td><td>.py</td><td>All code, runnable top to bottom, producing every number and figure reported.</td></tr>
+    <tr><td class="num">2</td><td><code>lab06_report_&lt;surname&gt;.pdf</code></td><td>.pdf</td><td>Write-up following the <a href="Lab-Report-Template.docx">Lab Report Template</a>. Maximum 7 pages.</td></tr>
+    <tr><td class="num">3</td><td><code>lab06_ai_prompts_&lt;surname&gt;.docx</code></td><td>.docx (Word)</td><td>Every prompt you sent to an AI assistant, word for word, using the <a href="AI-Prompt-Log-Template.docx">AI Prompt Log Template</a>.</td></tr>
+    <tr><td class="num">4</td><td><code>figures/</code></td><td>.png</td><td>Every figure, 150 dpi minimum, axes labelled with units. File names must match the figure numbers in the report.</td></tr>
+    <tr><td class="num">5</td><td><code>lab06_output_&lt;surname&gt;.txt</code></td><td>.txt</td><td>The console output of your program, captured as it ran.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout trap">
+  <span class="tag">Automatic deductions</span>
+  <p>&minus;5 for a missing console output file. &minus;5 for figures not referenced in the report. &minus;10 if
+  the code does not run as submitted. &minus;10 per day late. A missing AI Prompt Log is not a deduction; it is
+  a zero for the assignment, under the policy in the <a href="grading.html">grading system</a>.</p>
+</div>
+
+<hr class="rule">
+
+<h2>Part A — The solver <span class="chip">25 pts</span></h2>
+
+<ol class="steps">
+  <li><strong>A.1</strong> Implement <code>gauss_naive(A, b)</code> — elimination without pivoting — and
+  <code>gauss_pivot(A, b)</code> — with partial pivoting and a singularity check. Neither may modify the arrays
+  passed in; demonstrate that in your report.</li>
+
+  <li><strong>A.2</strong> Implement <code>residual(A, x, b)</code> returning the maximum absolute residual, and
+  use it after every solve in this assignment.</li>
+
+  <li><strong>A.3</strong> Verify both routines on a 3&times;3 system whose solution you compute by hand. Show
+  the hand solution.</li>
+
+  <li><strong>A.4</strong> Count operations. Instrument the elimination loop with a multiplication counter and
+  report the count for <span class="v">n</span> = 5, 10, 20, 40. Compare with
+  <span class="v">n</span><sup>3</sup>/3 and state the ratio.</li>
+</ol>
+
+<h2>Part B — Why pivoting is not optional <span class="chip">25 pts</span></h2>
+
+<ol class="steps">
+  <li><strong>B.1</strong> Solve the zero-pivot system
+  <div class="math" style="font-size:16px;margin:8px 0">
+    [<span class="v">A</span>] = [[0, 2, 1], [1, 3, 2], [2, 1, 4]],
+    &nbsp; {<span class="v">b</span>} = {7, 13, 15}
+  </div>
+  with both routines. Report what <code>gauss_naive</code> returns and why.</li>
+
+  <li><strong>B.2</strong> Solve the near-singular pair
+  0.0003<span class="v">x</span><sub>1</sub> + 3.0000<span class="v">x</span><sub>2</sub> = 2.0001,
+  <span class="v">x</span><sub>1</sub> + <span class="v">x</span><sub>2</sub> = 1
+  with both routines. The exact solution is (1/3, 2/3). Report the relative error of each, and the value of the
+  elimination multiplier that caused the damage.</li>
+
+  <li><strong>B.3</strong> Repeat B.2 with the coefficient 0.0003 replaced by 3&times;10<sup>&minus;6</sup>,
+  3&times;10<sup>&minus;9</sup> and 3&times;10<sup>&minus;12</sup>. Tabulate the relative error of the naive
+  solver against the pivot size, and state the trend.</li>
+
+  <li><strong>B.4</strong> For each case in B.3, report the residual of the <em>naive</em> answer. You will find
+  cases where the residual is small and the answer is badly wrong. Explain, in three sentences, why a small
+  residual is not proof of an accurate solution.</li>
+</ol>
+
+<h2>Part C — A real truss <span class="chip">30 pts</span></h2>
+
+<p>A simply supported pin-jointed truss spans 9 m in three 3 m panels. The lower chord joints are
+L0 (0, 0) with a pin support, L1 (3, 0), L2 (6, 0) and L3 (9, 0) with a roller support. The upper chord joints
+are U1 (3, 2.4) and U2 (6, 2.4).</p>
+
+<p>The nine members are: <strong>L0L1, L1L2, L2L3</strong> (bottom chord), <strong>U1U2</strong> (top chord),
+and <strong>L0U1, U1L1, U1L2, U2L2, U2L3</strong> (web). Vertical downward loads of 40 kN act at L1 and L2, and
+20 kN at U1 and U2, giving 120 kN in total.</p>
+
+<div class="callout think">
+  <span class="tag">Check the determinacy before you start</span>
+  <p><span class="v">m</span> + <span class="v">r</span> = 9 + 3 = 12 and 2<span class="v">j</span> = 2(6) = 12,
+  so the truss is statically determinate and the equilibrium equations alone are sufficient. Confirm this in
+  your report. Had the count come out unequal, the method of joints would not have produced a square matrix —
+  and your solver would have failed for a structural reason, not a numerical one.</p>
+</div>
+
+<ol class="steps">
+  <li><strong>C.1</strong> Draw the truss, label every joint and member, and state your sign convention
+  (tension positive is recommended). This drawing is worth marks: an unlabelled truss cannot be checked.</li>
+
+  <li><strong>C.2</strong> Assemble the equilibrium equations by the method of joints. Write the assembly as a
+  loop over joints in your code, not as a hand-typed matrix — a hand-typed 12&times;12 matrix cannot be marked
+  for method.</li>
+
+  <li><strong>C.3</strong> Solve with <code>gauss_pivot</code>. Report every member force in kN to three
+  significant figures, stating tension or compression for each.</li>
+
+  <li><strong>C.4</strong> Verify in three independent ways, and report all three:
+    <ol style="margin:6px 0 0">
+      <li>the maximum residual of the linear system;</li>
+      <li>&Sigma;<span class="v">F<sub>x</sub></span> and &Sigma;<span class="v">F<sub>y</sub></span> at every
+      joint, computed from the member forces;</li>
+      <li>global equilibrium: the two reactions must sum to the total applied load of 120 kN.</li>
+    </ol>
+  </li>
+
+  <li><strong>C.5</strong> Identify the most heavily loaded member in tension and in compression. For the
+  compression member, state why its length matters to a designer even though this analysis never mentions
+  buckling.</li>
+
+  <li><strong>C.6</strong> Move the 40 kN load from L1 to L2, so that L2 carries 80 kN and L1 carries none, and
+  re-solve. Tabulate both sets of member forces side by side. Report:
+    <ol style="margin:6px 0 0">
+      <li>any member that changes sign;</li>
+      <li>any member that was zero-force and is now loaded, or the reverse;</li>
+      <li>the member whose force increases the most, in kN and in percent.</li>
+    </ol>
+    Then answer in one paragraph: a junior designer proposes deleting the zero-force members found in the first
+    load case, on the grounds that they carry nothing. Using your two result sets, explain why that is unsafe.
+  </li>
+</ol>
+
+<div class="callout key">
+  <span class="tag">A hint that saves an evening</span>
+  <p>Build and solve a three-member truss first, one you can check on paper in five minutes. Only when that is
+  exactly right should you extend the assembly loop to the full truss. Students who assemble all twelve equations
+  before testing anything spend the whole session hunting a sign error.</p>
+</div>
+
+<h2>Part D — AI Prompt Log <span class="chip">20 pts</span></h2>
+
+<p>Complete the <a href="AI-Prompt-Log-Template.docx">AI Prompt Log Template</a> in Word and
+submit it as <code>lab06_ai_prompts_&lt;surname&gt;.docx</code>. Record every prompt word for word, including
+the ones that produced nothing useful.</p>
+
+<div class="callout key">
+  <span class="tag">Required prompt experiment — the missing pivot</span>
+  <p>Send this prompt, word for word:</p>
+  <pre style="margin:10px 0"><code>write python code for gauss elimination to solve Ax=b</code></pre>
+  <p>Then, in the log:</p>
+  <ol style="margin:8px 0 0">
+    <li>State whether the returned code performs partial pivoting. Quote the lines that do, or state that none
+    do.</li>
+    <li>Run its code on the zero-pivot system from B.1 and record exactly what happens.</li>
+    <li>Run its code on the near-singular system from B.2 and report the relative error.</li>
+    <li>Write an improved prompt that requires partial pivoting, a singularity check with a stated tolerance,
+    non-destructive handling of the input arrays, and a returned residual. Compare the two answers.</li>
+    <li>Identify one remaining defect in the improved answer. Common ones: the singularity tolerance is
+    absolute rather than scaled to the matrix, the row swap copies the wrong slice, or the docstring claims
+    something the code does not do.</li>
+  </ol>
+</div>
+
+<h2>Grade breakdown</h2>
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Component</th><th class="num">Pts</th><th>Full marks require</th></tr></thead>
+  <tbody>
+    <tr><td>A — Solver</td><td class="num">25</td><td>Both routines correct and non-destructive, hand-verified case, operation count matching n<sup>3</sup>/3.</td></tr>
+    <tr><td>B — Pivoting</td><td class="num">25</td><td>Failure reproduced, multiplier identified, error-versus-pivot table, small-residual paradox explained.</td></tr>
+    <tr><td>C — Truss</td><td class="num">30</td><td>Labelled drawing, assembly by loop, all member forces with sense, three independent checks, load-case discussion.</td></tr>
+    <tr><td>D — AI Prompt Log</td><td class="num">20</td><td>Verbatim prompts, the AI's code actually run on B.1 and B.2, improved prompt compared, remaining defect named.</td></tr>
+    <tr><td><strong>Total</strong></td><td class="num"><strong>100</strong></td><td></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="pagenav">
+  <span><a href="lab-lecture-06.html">&larr; Lab Lecture 6</a></span>
+  <span><a href="lab-lecture-07.html">Lab Lecture 7 &rarr;</a></span>
+</div>
+
+<footer class="site">Numerical Methods Laboratory &middot; Lab Assignment 6 &middot; Prepared by Engr. Escranda</footer>
+</div>
+</body>
+</html>

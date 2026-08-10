@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab Lecture 8 — Infinite Series and the Cost of Stopping</title>
+<style>
+/* ============================================================
+   Numerical Methods Laboratory — shared stylesheet
+   White and blue. Code blocks remain dark. Print-friendly.
+   ============================================================ */
+
+:root {
+  --bg:        #ffffff;
+  --surface:   #ffffff;
+  --surface-2: #f2f6fb;
+  --surface-3: #e8f0f9;
+  --ink:       #10233a;
+  --ink-soft:  #3d5670;
+  --ink-faint: #6b8199;
+  --rule:      #d5e2f0;
+  --accent:    #0b5fa5;      /* primary blue */
+  --accent-dk: #08436f;
+  --accent-lt: #4a92d0;
+  --ok:        #14705c;
+  --warn:      #8a5b00;
+  --code-bg:   #0d1b2a;      /* black-blue: code stays dark */
+  --code-ink:  #e6edf5;
+  --shadow:    0 1px 2px rgba(16,35,58,.05), 0 6px 20px rgba(16,35,58,.07);
+  --mono: "Cascadia Code", "JetBrains Mono", Consolas, "SF Mono", Menlo, monospace;
+  --sans: "Segoe UI", Inter, system-ui, -apple-system, Roboto, sans-serif;
+  --serif: "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 24px 96px; }
+.wrap-wide { max-width: 1080px; margin: 0 auto; padding: 0 24px 96px; }
+
+/* ---------- masthead ---------- */
+.masthead {
+  border-bottom: 2px solid var(--accent);
+  background: var(--surface);
+  padding: 10px 0;
+  margin-bottom: 40px;
+}
+.masthead .wrap, .masthead .wrap-wide { padding-bottom: 0; }
+.crumbs {
+  font-size: 13px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-faint); display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+}
+.crumbs a { color: var(--accent); text-decoration: none; }
+.crumbs a:hover { text-decoration: underline; }
+
+/* ---------- titles ---------- */
+.eyebrow {
+  font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent); margin: 0 0 10px;
+}
+h1 {
+  font-family: var(--serif);
+  font-size: clamp(30px, 5vw, 43px);
+  line-height: 1.14; margin: 0 0 12px; letter-spacing: -.01em; font-weight: 700;
+  color: var(--ink);
+}
+h2 {
+  font-family: var(--serif);
+  font-size: clamp(23px, 3.2vw, 29px);
+  margin: 52px 0 14px; line-height: 1.2; color: var(--accent-dk);
+  padding-bottom: 8px; border-bottom: 1px solid var(--rule);
+}
+h3 { font-size: 19px; margin: 32px 0 10px; letter-spacing: -.005em; color: var(--ink); }
+h4 { font-size: 15px; margin: 24px 0 8px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .08em; }
+.lede { font-size: 19px; color: var(--ink-soft); line-height: 1.6; margin: 0 0 8px; }
+
+.meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 8px; }
+.chip {
+  font-size: 12.5px; font-weight: 600; letter-spacing: .04em;
+  padding: 4px 11px; border-radius: 3px;
+  background: var(--surface-2); color: var(--ink-soft); border: 1px solid var(--rule);
+}
+.chip.hot { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+hr.rule { border: 0; border-top: 1px solid var(--rule); margin: 44px 0; }
+
+/* ---------- narrative / case blocks ---------- */
+.story {
+  font-family: var(--serif);
+  font-size: 18.5px; line-height: 1.7;
+  background: var(--surface-2);
+  border-left: 3px solid var(--accent);
+  padding: 20px 24px; margin: 26px 0;
+  border-radius: 0 4px 4px 0;
+}
+.story p:first-child { margin-top: 0; }
+.story p:last-child { margin-bottom: 0; }
+.story .who {
+  font-family: var(--sans); font-size: 12.5px; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--accent); font-weight: 700; margin-bottom: 8px;
+}
+
+.callout {
+  border: 1px solid var(--rule); border-radius: 4px;
+  padding: 16px 20px; margin: 22px 0; background: var(--surface);
+}
+.callout .tag { font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+.callout.think { border-left: 3px solid var(--accent-lt); background: var(--surface-2); }
+.callout.think .tag { color: var(--accent); }
+.callout.trap { border-left: 3px solid var(--warn); }
+.callout.trap .tag { color: var(--warn); }
+.callout.key  { border-left: 3px solid var(--accent-dk); background: var(--surface-3); }
+.callout.key .tag { color: var(--accent-dk); }
+.callout p:first-of-type { margin-top: 0; }
+.callout p:last-child { margin-bottom: 0; }
+
+/* ---------- math ---------- */
+.math {
+  font-family: var(--serif); font-size: 20px; text-align: center;
+  padding: 18px 12px; margin: 20px 0; color: var(--ink);
+  background: var(--surface-2); border: 1px solid var(--rule);
+  border-radius: 4px; overflow-x: auto;
+}
+.frac { display: inline-block; vertical-align: middle; text-align: center; margin: 0 .25em; }
+.frac > span { display: block; padding: 0 .35em; }
+.frac .den { border-top: 1.5px solid currentColor; }
+.eqn-no { float: right; color: var(--ink-faint); font-family: var(--sans); font-size: 14px; }
+var, .v { font-family: var(--serif); font-style: italic; }
+
+/* ---------- code (stays dark) ---------- */
+pre {
+  background: var(--code-bg); color: var(--code-ink);
+  padding: 18px 20px; border-radius: 4px; overflow-x: auto;
+  font-family: var(--mono); font-size: 14px; line-height: 1.6;
+  margin: 18px 0; border: 1px solid #0a1622;
+}
+pre .c { color: #7e93a8; font-style: italic; }   /* comment  */
+pre .k { color: #7fb3ff; }                        /* keyword  */
+pre .s { color: #9fd39a; }                        /* string   */
+pre .n { color: #ffcf7a; }                        /* number   */
+pre .f { color: #8fd8ec; }                        /* function */
+code {
+  font-family: var(--mono); font-size: .9em;
+  background: var(--surface-2); padding: 2px 6px; border-radius: 3px;
+  border: 1px solid var(--rule); color: var(--accent-dk);
+}
+pre code { background: none; border: 0; padding: 0; font-size: inherit; color: inherit; }
+
+/* ---------- tables ---------- */
+table {
+  width: 100%; border-collapse: collapse; margin: 22px 0;
+  font-size: 15px; background: var(--surface);
+  border: 1px solid var(--rule);
+}
+th, td { padding: 10px 13px; text-align: left; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th {
+  background: var(--accent); color: #fff; font-size: 12.5px;
+  text-transform: uppercase; letter-spacing: .06em; font-weight: 700;
+}
+tbody tr:nth-child(even) { background: var(--surface-2); }
+tbody tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-family: var(--mono); font-size: 13.5px; }
+.table-scroll { overflow-x: auto; }
+
+/* ---------- lists ---------- */
+ul, ol { padding-left: 22px; }
+li { margin: 7px 0; }
+li::marker { color: var(--accent); }
+ol.steps { counter-reset: s; list-style: none; padding-left: 0; }
+ol.steps > li { counter-increment: s; position: relative; padding-left: 42px; margin: 16px 0; }
+ol.steps > li::before {
+  content: counter(s); position: absolute; left: 0; top: 1px;
+  width: 28px; height: 28px; border-radius: 3px;
+  background: var(--accent); color: #fff; font-weight: 700; font-size: 14px;
+  display: grid; place-items: center;
+}
+
+/* ---------- cards ---------- */
+.grid { display: grid; gap: 16px; margin: 24px 0; }
+.grid.two   { grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); }
+.grid.three { grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); }
+
+.card {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 4px;
+  border-top: 3px solid var(--accent);
+  padding: 18px 20px; box-shadow: var(--shadow);
+  text-decoration: none; color: inherit; display: block;
+}
+a.card:hover { border-color: var(--accent-lt); border-top-color: var(--accent-dk); background: var(--surface-2); }
+.card h3 { margin: 4px 0 6px; font-size: 17px; }
+.card p { margin: 0; font-size: 14.5px; color: var(--ink-soft); }
+.card .n { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 700; letter-spacing: .1em; }
+
+/* ---------- buttons ---------- */
+.btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 28px 0; }
+.btn {
+  display: inline-block; padding: 11px 20px; border-radius: 3px;
+  font-size: 15px; font-weight: 600; text-decoration: none;
+  background: var(--accent); color: #fff; border: 1px solid var(--accent);
+}
+.btn:hover { background: var(--accent-dk); border-color: var(--accent-dk); }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn.ghost:hover { background: var(--surface-2); color: var(--accent-dk); }
+
+/* ---------- checklist ---------- */
+.checklist { list-style: none; padding-left: 0; }
+.checklist li { padding-left: 30px; position: relative; }
+.checklist li::before {
+  content: ""; position: absolute; left: 0; top: 5px;
+  width: 15px; height: 15px; border: 2px solid var(--accent-lt); border-radius: 2px;
+}
+
+/* ---------- footer nav ---------- */
+.pagenav {
+  display: flex; justify-content: space-between; gap: 16px;
+  border-top: 1px solid var(--rule); margin-top: 56px; padding-top: 20px;
+  font-size: 15px;
+}
+.pagenav a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.pagenav a:hover { text-decoration: underline; }
+
+footer.site {
+  border-top: 1px solid var(--rule); margin-top: 40px; padding: 22px 0 60px;
+  color: var(--ink-faint); font-size: 13.5px; text-align: center;
+}
+
+a { color: var(--accent); }
+
+/* ---------- print ---------- */
+@media print {
+  :root { --surface-2:#f4f7fa; --shadow:none; }
+  body { font-size: 11pt; }
+  pre { background:#f2f5f8; color:#101c28; border:1px solid #c8d6e4; }
+  pre .c,pre .k,pre .s,pre .n,pre .f { color:#101c28; }
+  th { background:#e8f0f9; color:#10233a; }
+  .masthead, .pagenav, .btn-row { display: none; }
+  h2 { page-break-after: avoid; }
+  pre, table, .callout, .story { page-break-inside: avoid; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="wrap">
+    <div class="crumbs">
+      <a href="index.html">Numerical Methods</a> <span>/</span>
+      <span>Lab Lecture 8</span> <span>/</span>
+      <a href="lab-assignment-08.html">Assignment 8</a> <span>/</span>
+      <a href="grading.html">Grading</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<p class="eyebrow">Lab Lecture 8 &middot; Lecture topic: Infinite Series</p>
+<h1>Infinite Series and the Cost of Stopping</h1>
+<p class="lede">The classical solution for consolidation settlement is an infinite sum. So is the deflection of a
+plate, the temperature in a curing concrete pour, and the response of a beam to a moving load. A computer cannot
+add infinitely many terms. This lab is about deciding where to stop, and about the arithmetic that decides the
+answer for you if you are careless.</p>
+
+<div class="meta-row">
+  <span class="chip">3 hours</span>
+  <span class="chip">Convergence and truncation</span>
+  <span class="chip">Machine epsilon</span>
+  <span class="chip hot">Assignment 8 due next session</span>
+</div>
+
+<h2>1. The story: settlement, term by term</h2>
+
+<div class="story">
+  <div class="who">Case file — embankment on soft clay, settlement prediction</div>
+  <p>A geotechnical engineer must state when 90 % of the primary consolidation of a 6 m clay layer will be
+  complete. Terzaghi's one-dimensional theory gives the answer as a series: the average degree of consolidation
+  <span class="v">U</span> at time factor <span class="v">T</span> is</p>
+</div>
+
+<div class="math">
+  <span class="v">U</span>(<span class="v">T</span>) = 1 &minus;
+  &sum;<sub><span class="v">m</span>=0</sub><sup>&infin;</sup>
+  <span class="frac"><span class="num">2</span><span class="den"><span class="v">M</span><sup>2</sup></span></span>
+  <span class="v">e</span><sup>&minus;<span class="v">M</span><sup>2</sup><span class="v">T</span></sup>
+  &nbsp;&nbsp;&nbsp;
+  <span class="v">M</span> = <span class="frac"><span class="num">&pi;(2<span class="v">m</span>+1)</span><span class="den">2</span></span>
+</div>
+
+<p>The textbook prints a table of <span class="v">U</span> against <span class="v">T</span> and stops there. The
+engineer needs values between the tabulated points, so the series must actually be summed — and summing it
+requires a decision no textbook makes: how many terms.</p>
+
+<h2>2. What convergence actually costs</h2>
+
+<p>Each term of the consolidation series decays as <span class="v">e</span><sup>&minus;<span class="v">M</span><sup>2</sup><span class="v">T</span></sup>,
+and <span class="v">M</span> grows linearly with <span class="v">m</span>, so the exponent grows as
+<span class="v">m</span><sup>2</sup>. For a large time factor the series collapses almost immediately. For a
+small one it does not.</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th class="num">T</th><th class="num">Terms for 6 significant figures</th><th class="num">U(T)</th><th>Comment</th></tr></thead>
+  <tbody>
+    <tr><td class="num">1.000</td><td class="num">2</td><td class="num">0.9313</td><td>The first term is essentially the whole answer; the second only confirms it.</td></tr>
+    <tr><td class="num">0.500</td><td class="num">3</td><td class="num">0.7640</td><td>Comfortable.</td></tr>
+    <tr><td class="num">0.200</td><td class="num">3</td><td class="num">0.5041</td><td>Comfortable.</td></tr>
+    <tr><td class="num">0.050</td><td class="num">6</td><td class="num">0.2523</td><td>Still cheap.</td></tr>
+    <tr><td class="num">0.010</td><td class="num">10</td><td class="num">0.1128</td><td>Noticeably slower.</td></tr>
+    <tr><td class="num">0.001</td><td class="num">27</td><td class="num">0.0357</td><td>Early-time behaviour is expensive.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout key">
+  <span class="tag">The general lesson</span>
+  <p>Convergence rate is not a property of the series alone; it is a property of the series <em>at the value you
+  are evaluating</em>. A routine that uses a fixed 10 terms is accurate for late-time settlement and wrong for
+  early-time settlement, and it will never tell you which case you are in. Always stop on a measured criterion,
+  never on a fixed count.</p>
+</div>
+
+<h2>3. Building a series summation properly</h2>
+
+<pre><code><span class="k">import</span> numpy <span class="k">as</span> np
+
+<span class="k">def</span> <span class="f">consolidation_U</span>(T, es=<span class="n">1e-8</span>, max_terms=<span class="n">2000</span>):
+    <span class="s">"""Average degree of consolidation by Terzaghi's series.
+
+    T         : time factor, dimensionless
+    es        : stopping tolerance on the approximate relative error, percent
+    Returns   : (U, terms_used, ea)
+    """</span>
+    <span class="k">if</span> T &lt;= <span class="n">0</span>:
+        <span class="k">return</span> <span class="n">0.0</span>, <span class="n">0</span>, <span class="n">0.0</span>
+
+    total = <span class="n">0.0</span>
+    ea = <span class="f">float</span>(<span class="s">'inf'</span>)
+    <span class="k">for</span> m <span class="k">in</span> <span class="f">range</span>(max_terms):
+        M = np.pi * (<span class="n">2</span>*m + <span class="n">1</span>) / <span class="n">2</span>
+        term = (<span class="n">2</span> / M**<span class="n">2</span>) * np.exp(-M**<span class="n">2</span> * T)
+        old = total
+        total += term
+        <span class="k">if</span> total &gt; <span class="n">0</span>:
+            ea = <span class="f">abs</span>((total - old) / total) * <span class="n">100</span>
+        <span class="k">if</span> ea &lt; es:
+            <span class="k">return</span> <span class="n">1</span> - total, m + <span class="n">1</span>, ea
+    <span class="k">return</span> <span class="n">1</span> - total, max_terms, ea</code></pre>
+
+<p>Three features of this routine are the point of the lab, and all three are commonly omitted:</p>
+
+<ol class="steps">
+  <li><strong>It stops on a measured error, not a term count.</strong> The criterion is the approximate percent
+  relative error &epsilon;<sub>a</sub> — the change the last term made, relative to the running total.</li>
+  <li><strong>It caps the loop.</strong> A series that fails to converge must terminate anyway, with the number
+  of terms used reported so the caller can detect it.</li>
+  <li><strong>It reports how hard it worked.</strong> Returning <code>terms_used</code> and <code>ea</code>
+  turns an opaque number into a result with provenance.</li>
+</ol>
+
+<h3>How many figures is &epsilon;<sub>s</sub> worth?</h3>
+
+<p>The Scarborough criterion converts a demand for significant figures into a tolerance:</p>
+
+<div class="math">
+  <span class="v">&epsilon;<sub>s</sub></span> = (0.5 &times; 10<sup>2&minus;<span class="v">n</span></sup>) %
+  &nbsp;&nbsp;&rarr;&nbsp;&nbsp; 3 figures: 0.05 %, &nbsp; 6 figures: 5&times;10<sup>&minus;5</sup> %
+</div>
+
+<p>Settlement predictions are rarely worth more than three significant figures, because the coefficient of
+consolidation is seldom known to better than a factor of two. Summing to 10<sup>&minus;12</sup> is arithmetic
+theatre. Match the tolerance to the data, and say so in the report.</p>
+
+<h2>4. Worked example: U at a time factor of 0.2</h2>
+
+<p>Follow this with a calculator before running any code. Take <span class="v">T</span> = 0.2 and sum term by
+term. Recall <span class="v">M</span> = &pi;(2<span class="v">m</span>+1)/2.</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th class="num">m</th><th class="num">M</th><th class="num">M&sup2;</th><th class="num">term = (2/M&sup2;)e<sup>&minus;M&sup2;T</sup></th><th class="num">running sum</th><th class="num">U = 1 &minus; sum</th><th class="num">&epsilon;<sub>a</sub> (%)</th></tr></thead>
+  <tbody>
+    <tr><td class="num">0</td><td class="num">1.570796</td><td class="num">2.467401</td><td class="num">0.494851060</td><td class="num">0.494851060</td><td class="num">0.505149</td><td class="num">—</td></tr>
+    <tr><td class="num">1</td><td class="num">4.712389</td><td class="num">22.206610</td><td class="num">0.001060977</td><td class="num">0.495912038</td><td class="num">0.504088</td><td class="num">2.14e&minus;01</td></tr>
+    <tr><td class="num">2</td><td class="num">7.853982</td><td class="num">61.685028</td><td class="num">0.000000142</td><td class="num">0.495912180</td><td class="num">0.504088</td><td class="num">2.87e&minus;05</td></tr>
+    <tr><td class="num">3</td><td class="num">10.995574</td><td class="num">120.902654</td><td class="num">1.4e&minus;13</td><td class="num">0.495912180</td><td class="num">0.504088</td><td class="num">1.05e&minus;10</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Work through the first term by hand to confirm the mechanics:
+<span class="v">M</span> = &pi;/2 = 1.570796, so <span class="v">M</span><sup>2</sup> = 2.467401. Then
+2/<span class="v">M</span><sup>2</sup> = 0.810569 and
+<span class="v">e</span><sup>&minus;2.467401(0.2)</sup> = <span class="v">e</span><sup>&minus;0.493480</sup> =
+0.610500. Their product is 0.494851.</p>
+
+<div class="callout key">
+  <span class="tag">What the table shows</span>
+  <p><strong>U = 0.5041</strong>, which is the textbook value at <span class="v">T</span> = 0.2.</p>
+  <p style="margin-top:8px">The second term contributes 0.2 % and the third contributes 0.00003 %. Each term is
+  smaller than the previous one by roughly a factor of 500, because the exponent grows as
+  <span class="v">m</span><sup>2</sup>. Two terms give three significant figures; three terms give six. A
+  routine that always sums ten terms is doing seven terms of useless arithmetic here — and, at
+  <span class="v">T</span> = 0.001, is stopping eighteen terms too early.</p>
+</div>
+
+<p>The stopping decision is therefore made by &epsilon;<sub>a</sub>, not by the programmer. With
+&epsilon;<sub>s</sub> = 0.05 % (three significant figures, by the Scarborough criterion) the loop stops after
+two terms. With &epsilon;<sub>s</sub> = 5&times;10<sup>&minus;5</sup> % it stops after three.</p>
+
+<h2>5. Series that behave badly</h2>
+
+<h3>5.1 Terms that grow before they shrink</h3>
+
+<p>The exponential series &sum;<span class="v">x</span><sup><span class="v">k</span></sup>/<span class="v">k</span>!
+converges for every <span class="v">x</span>. For <span class="v">x</span> = &minus;20 it converges to
+2.06&times;10<sup>&minus;9</sup> — but the largest term along the way is about 4.3&times;10<sup>7</sup>. The
+computer must add and subtract numbers of order 10<sup>7</sup> and land on 10<sup>&minus;9</sup>. The leading
+sixteen digits cancel and what remains is round-off.</p>
+
+<pre><code><span class="k">def</span> <span class="f">exp_series</span>(x, n_terms=<span class="n">200</span>):
+    term, total, largest = <span class="n">1.0</span>, <span class="n">1.0</span>, <span class="n">1.0</span>
+    <span class="k">for</span> k <span class="k">in</span> <span class="f">range</span>(<span class="n">1</span>, n_terms):
+        term *= x / k
+        total += term
+        largest = <span class="f">max</span>(largest, <span class="f">abs</span>(term))
+    <span class="k">return</span> total, largest
+
+approx, largest = exp_series(-<span class="n">20.0</span>)
+<span class="k">print</span>(approx, np.exp(-<span class="n">20.0</span>), largest)
+<span class="c"># the approximation is wrong by orders of magnitude, and may even be negative</span></code></pre>
+
+<div class="callout key">
+  <span class="tag">The diagnostic, and the cure</span>
+  <p><strong>Diagnostic:</strong> compare the largest term encountered with the final answer. If the ratio is
+  10<sup><span class="v">k</span></sup>, you have lost about <span class="v">k</span> significant figures to
+  cancellation.</p>
+  <p style="margin-top:8px"><strong>Cure:</strong> reformulate so that nothing cancels. Here, sum the series for
+  <span class="v">e</span><sup>+20</sup>, where every term is positive, and take the reciprocal. Algebraically
+  identical, numerically far better. Whenever a formula subtracts two nearly equal quantities, look for an
+  equivalent that does not.</p>
+</div>
+
+<h3>5.2 Series that converge too slowly to be useful</h3>
+
+<p>The harmonic-like alternating series &sum;(&minus;1)<sup><span class="v">k</span>+1</sup>/<span class="v">k</span>
+converges to ln 2, but the error after <span class="v">n</span> terms is about 1/(2<span class="v">n</span>).
+Three correct decimal places require about 500 terms; six require half a million. A series can be perfectly
+convergent and still be the wrong way to compute the number.</p>
+
+<h3>5.3 The floor imposed by the machine</h3>
+
+<pre><code><span class="k">def</span> <span class="f">machine_epsilon</span>():
+    <span class="s">"""Smallest eps with 1.0 + eps != 1.0."""</span>
+    eps = <span class="n">1.0</span>
+    <span class="k">while</span> <span class="n">1.0</span> + eps/<span class="n">2.0</span> != <span class="n">1.0</span>:
+        eps /= <span class="n">2.0</span>
+    <span class="k">return</span> eps
+
+<span class="k">print</span>(machine_epsilon())      <span class="c"># 2.220446049250313e-16</span></code></pre>
+
+<p>About 2.2&times;10<sup>&minus;16</sup>, or roughly sixteen significant decimal digits. Once a term is smaller
+than <span class="v">&epsilon;<sub>mach</sub></span> times the running total, adding it changes nothing at all.
+Setting a tolerance below that produces an infinite loop, not a better answer. This is the ceiling on every
+calculation in this course.</p>
+
+<h2>6. Estimating the error you did not compute</h2>
+
+<p>For an alternating series with decreasing terms, the truncation error is bounded by the first term omitted —
+a rare case where the error bound is free. For a positive series such as the consolidation sum, no such bound
+exists in general, so use one of these:</p>
+
+<ol class="steps">
+  <li><strong>Compare with a tighter tolerance.</strong> Sum to 10<sup>&minus;6</sup>, then to
+  10<sup>&minus;10</sup>, and take the difference as the error estimate of the first.</li>
+  <li><strong>Bound the tail analytically.</strong> For the consolidation series the omitted terms are dominated
+  by a geometric decay, so the tail is bounded by a multiple of the last term computed.</li>
+  <li><strong>Check against an independent formula.</strong> The standard approximations
+  <span class="v">T</span> = &pi;<span class="v">U</span><sup>2</sup>/4 for <span class="v">U</span> &lt; 0.6 and
+  <span class="v">T</span> = 1.781 &minus; 0.933 log<sub>10</sub>(100 &minus; <span class="v">U</span>%) above it
+  agree with the series to about 1 %. Disagreement signals an error in your summation, not in the textbook.</li>
+</ol>
+
+<h2>7. Where it breaks</h2>
+
+<div class="grid two">
+  <div class="card">
+    <h3>Fixed term count</h3>
+    <p>Accurate at one operating point, silently wrong at another. The most common defect in inherited
+    engineering code.</p>
+  </div>
+  <div class="card">
+    <h3>Tolerance below machine epsilon</h3>
+    <p>The loop cannot satisfy it and runs to the cap. Always cap, and always report whether the cap was
+    reached.</p>
+  </div>
+  <div class="card">
+    <h3>Cancellation</h3>
+    <p>Large intermediate terms, small final answer. Detect by tracking the largest term; cure by
+    reformulating.</p>
+  </div>
+  <div class="card">
+    <h3>Evaluating at the boundary</h3>
+    <p>At <span class="v">T</span> = 0 the series sums to 1 and <span class="v">U</span> = 0, but convergence
+    there is infinitely slow. Handle boundary values as special cases rather than letting the loop grind.</p>
+  </div>
+</div>
+
+<h2>8. In-lab exercises</h2>
+
+<ol class="steps">
+  <li>Reproduce the table in section 2. Confirm the number of terms needed at <span class="v">T</span> = 0.001 and at <span class="v">T</span> = 1.0.</li>
+  <li>Compute <span class="v">T</span><sub>90</sub> by solving <span class="v">U</span>(<span class="v">T</span>) = 0.90 with a bisection search over <span class="v">T</span>. Compare with the standard value of 0.848.</li>
+  <li>For a 6 m clay layer drained both faces with <span class="v">c<sub>v</sub></span> = 2.4 m&sup2;/year, convert <span class="v">T</span><sub>90</sub> to a time in years. Note that the drainage path is half the layer thickness.</li>
+  <li>Run <code>exp_series(-20)</code> and report the largest term, the computed value, and the true value. Then compute it by reciprocal and report the improvement in significant figures.</li>
+  <li>Determine machine epsilon with your own loop and confirm it against <code>np.finfo(float).eps</code>.</li>
+</ol>
+
+<div class="btn-row">
+  <a class="btn" href="lab-assignment-08.html">Go to Assignment 8 &rarr;</a>
+  <a class="btn ghost" href="lab08_demo.py">Lecture program (lab08_demo.py)</a>
+  <a class="btn ghost" href="lab08_starter.py">starter.py</a>
+</div>
+
+<h2>9. Carry into Lab Lecture 9</h2>
+<ul>
+  <li>Stop on a measured error, never on a fixed number of terms.</li>
+  <li>Convergence rate depends on where you evaluate, not only on the series.</li>
+  <li>Large intermediate terms with a small answer means cancellation; reformulate.</li>
+  <li>Machine epsilon is the floor; tolerances below it are unreachable.</li>
+  <li>Next: the one series that generates every method in this course — Taylor's.</li>
+</ul>
+
+<div class="pagenav">
+  <span><a href="lab-lecture-07.html">&larr; Lab Lecture 7</a></span>
+  <span><a href="lab-lecture-09.html">Lab Lecture 9 &rarr;</a></span>
+</div>
+
+<footer class="site">Numerical Methods Laboratory &middot; Lab Lecture 8 &middot; Prepared by Engr. Escranda</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Numerical Methods — Laboratory Course</title>
+<style>
+/* ============================================================
+   Numerical Methods Laboratory — shared stylesheet
+   White and blue. Code blocks remain dark. Print-friendly.
+   ============================================================ */
+
+:root {
+  --bg:        #ffffff;
+  --surface:   #ffffff;
+  --surface-2: #f2f6fb;
+  --surface-3: #e8f0f9;
+  --ink:       #10233a;
+  --ink-soft:  #3d5670;
+  --ink-faint: #6b8199;
+  --rule:      #d5e2f0;
+  --accent:    #0b5fa5;      /* primary blue */
+  --accent-dk: #08436f;
+  --accent-lt: #4a92d0;
+  --ok:        #14705c;
+  --warn:      #8a5b00;
+  --code-bg:   #0d1b2a;      /* black-blue: code stays dark */
+  --code-ink:  #e6edf5;
+  --shadow:    0 1px 2px rgba(16,35,58,.05), 0 6px 20px rgba(16,35,58,.07);
+  --mono: "Cascadia Code", "JetBrains Mono", Consolas, "SF Mono", Menlo, monospace;
+  --sans: "Segoe UI", Inter, system-ui, -apple-system, Roboto, sans-serif;
+  --serif: "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 24px 96px; }
+.wrap-wide { max-width: 1080px; margin: 0 auto; padding: 0 24px 96px; }
+
+/* ---------- masthead ---------- */
+.masthead {
+  border-bottom: 2px solid var(--accent);
+  background: var(--surface);
+  padding: 10px 0;
+  margin-bottom: 40px;
+}
+.masthead .wrap, .masthead .wrap-wide { padding-bottom: 0; }
+.crumbs {
+  font-size: 13px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-faint); display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+}
+.crumbs a { color: var(--accent); text-decoration: none; }
+.crumbs a:hover { text-decoration: underline; }
+
+/* ---------- titles ---------- */
+.eyebrow {
+  font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent); margin: 0 0 10px;
+}
+h1 {
+  font-family: var(--serif);
+  font-size: clamp(30px, 5vw, 43px);
+  line-height: 1.14; margin: 0 0 12px; letter-spacing: -.01em; font-weight: 700;
+  color: var(--ink);
+}
+h2 {
+  font-family: var(--serif);
+  font-size: clamp(23px, 3.2vw, 29px);
+  margin: 52px 0 14px; line-height: 1.2; color: var(--accent-dk);
+  padding-bottom: 8px; border-bottom: 1px solid var(--rule);
+}
+h3 { font-size: 19px; margin: 32px 0 10px; letter-spacing: -.005em; color: var(--ink); }
+h4 { font-size: 15px; margin: 24px 0 8px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .08em; }
+.lede { font-size: 19px; color: var(--ink-soft); line-height: 1.6; margin: 0 0 8px; }
+
+.meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 8px; }
+.chip {
+  font-size: 12.5px; font-weight: 600; letter-spacing: .04em;
+  padding: 4px 11px; border-radius: 3px;
+  background: var(--surface-2); color: var(--ink-soft); border: 1px solid var(--rule);
+}
+.chip.hot { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+hr.rule { border: 0; border-top: 1px solid var(--rule); margin: 44px 0; }
+
+/* ---------- narrative / case blocks ---------- */
+.story {
+  font-family: var(--serif);
+  font-size: 18.5px; line-height: 1.7;
+  background: var(--surface-2);
+  border-left: 3px solid var(--accent);
+  padding: 20px 24px; margin: 26px 0;
+  border-radius: 0 4px 4px 0;
+}
+.story p:first-child { margin-top: 0; }
+.story p:last-child { margin-bottom: 0; }
+.story .who {
+  font-family: var(--sans); font-size: 12.5px; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--accent); font-weight: 700; margin-bottom: 8px;
+}
+
+.callout {
+  border: 1px solid var(--rule); border-radius: 4px;
+  padding: 16px 20px; margin: 22px 0; background: var(--surface);
+}
+.callout .tag { font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+.callout.think { border-left: 3px solid var(--accent-lt); background: var(--surface-2); }
+.callout.think .tag { color: var(--accent); }
+.callout.trap { border-left: 3px solid var(--warn); }
+.callout.trap .tag { color: var(--warn); }
+.callout.key  { border-left: 3px solid var(--accent-dk); background: var(--surface-3); }
+.callout.key .tag { color: var(--accent-dk); }
+.callout p:first-of-type { margin-top: 0; }
+.callout p:last-child { margin-bottom: 0; }
+
+/* ---------- math ---------- */
+.math {
+  font-family: var(--serif); font-size: 20px; text-align: center;
+  padding: 18px 12px; margin: 20px 0; color: var(--ink);
+  background: var(--surface-2); border: 1px solid var(--rule);
+  border-radius: 4px; overflow-x: auto;
+}
+.frac { display: inline-block; vertical-align: middle; text-align: center; margin: 0 .25em; }
+.frac > span { display: block; padding: 0 .35em; }
+.frac .den { border-top: 1.5px solid currentColor; }
+.eqn-no { float: right; color: var(--ink-faint); font-family: var(--sans); font-size: 14px; }
+var, .v { font-family: var(--serif); font-style: italic; }
+
+/* ---------- code (stays dark) ---------- */
+pre {
+  background: var(--code-bg); color: var(--code-ink);
+  padding: 18px 20px; border-radius: 4px; overflow-x: auto;
+  font-family: var(--mono); font-size: 14px; line-height: 1.6;
+  margin: 18px 0; border: 1px solid #0a1622;
+}
+pre .c { color: #7e93a8; font-style: italic; }   /* comment  */
+pre .k { color: #7fb3ff; }                        /* keyword  */
+pre .s { color: #9fd39a; }                        /* string   */
+pre .n { color: #ffcf7a; }                        /* number   */
+pre .f { color: #8fd8ec; }                        /* function */
+code {
+  font-family: var(--mono); font-size: .9em;
+  background: var(--surface-2); padding: 2px 6px; border-radius: 3px;
+  border: 1px solid var(--rule); color: var(--accent-dk);
+}
+pre code { background: none; border: 0; padding: 0; font-size: inherit; color: inherit; }
+
+/* ---------- tables ---------- */
+table {
+  width: 100%; border-collapse: collapse; margin: 22px 0;
+  font-size: 15px; background: var(--surface);
+  border: 1px solid var(--rule);
+}
+th, td { padding: 10px 13px; text-align: left; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th {
+  background: var(--accent); color: #fff; font-size: 12.5px;
+  text-transform: uppercase; letter-spacing: .06em; font-weight: 700;
+}
+tbody tr:nth-child(even) { background: var(--surface-2); }
+tbody tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-family: var(--mono); font-size: 13.5px; }
+.table-scroll { overflow-x: auto; }
+
+/* ---------- lists ---------- */
+ul, ol { padding-left: 22px; }
+li { margin: 7px 0; }
+li::marker { color: var(--accent); }
+ol.steps { counter-reset: s; list-style: none; padding-left: 0; }
+ol.steps > li { counter-increment: s; position: relative; padding-left: 42px; margin: 16px 0; }
+ol.steps > li::before {
+  content: counter(s); position: absolute; left: 0; top: 1px;
+  width: 28px; height: 28px; border-radius: 3px;
+  background: var(--accent); color: #fff; font-weight: 700; font-size: 14px;
+  display: grid; place-items: center;
+}
+
+/* ---------- cards ---------- */
+.grid { display: grid; gap: 16px; margin: 24px 0; }
+.grid.two   { grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); }
+.grid.three { grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); }
+
+.card {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 4px;
+  border-top: 3px solid var(--accent);
+  padding: 18px 20px; box-shadow: var(--shadow);
+  text-decoration: none; color: inherit; display: block;
+}
+a.card:hover { border-color: var(--accent-lt); border-top-color: var(--accent-dk); background: var(--surface-2); }
+.card h3 { margin: 4px 0 6px; font-size: 17px; }
+.card p { margin: 0; font-size: 14.5px; color: var(--ink-soft); }
+.card .n { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 700; letter-spacing: .1em; }
+
+/* ---------- buttons ---------- */
+.btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 28px 0; }
+.btn {
+  display: inline-block; padding: 11px 20px; border-radius: 3px;
+  font-size: 15px; font-weight: 600; text-decoration: none;
+  background: var(--accent); color: #fff; border: 1px solid var(--accent);
+}
+.btn:hover { background: var(--accent-dk); border-color: var(--accent-dk); }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn.ghost:hover { background: var(--surface-2); color: var(--accent-dk); }
+
+/* ---------- checklist ---------- */
+.checklist { list-style: none; padding-left: 0; }
+.checklist li { padding-left: 30px; position: relative; }
+.checklist li::before {
+  content: ""; position: absolute; left: 0; top: 5px;
+  width: 15px; height: 15px; border: 2px solid var(--accent-lt); border-radius: 2px;
+}
+
+/* ---------- footer nav ---------- */
+.pagenav {
+  display: flex; justify-content: space-between; gap: 16px;
+  border-top: 1px solid var(--rule); margin-top: 56px; padding-top: 20px;
+  font-size: 15px;
+}
+.pagenav a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.pagenav a:hover { text-decoration: underline; }
+
+footer.site {
+  border-top: 1px solid var(--rule); margin-top: 40px; padding: 22px 0 60px;
+  color: var(--ink-faint); font-size: 13.5px; text-align: center;
+}
+
+a { color: var(--accent); }
+
+/* ---------- print ---------- */
+@media print {
+  :root { --surface-2:#f4f7fa; --shadow:none; }
+  body { font-size: 11pt; }
+  pre { background:#f2f5f8; color:#101c28; border:1px solid #c8d6e4; }
+  pre .c,pre .k,pre .s,pre .n,pre .f { color:#101c28; }
+  th { background:#e8f0f9; color:#10233a; }
+  .masthead, .pagenav, .btn-row { display: none; }
+  h2 { page-break-after: avoid; }
+  pre, table, .callout, .story { page-break-inside: avoid; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="wrap-wide">
+    <div class="crumbs"><strong>Numerical Methods</strong> <span>&middot;</span>
+    <span>Laboratory Course for Civil Engineering</span></div>
+  </div>
+</div>
+
+<div class="wrap-wide">
+
+<p class="eyebrow">Course index</p>
+<h1>Numerical Methods Laboratory</h1>
+<p class="lede">Ten laboratory sessions built on the Week 1–2 lecture topics — derivatives, integrals,
+matrices, infinite series and Taylor series — applied to problems a civil engineer meets in practice:
+reservoir records, beam deflections, river discharge, trusses, seepage, consolidation settlement and channel
+design.</p>
+
+<div class="meta-row">
+  <span class="chip">Python 3, NumPy, Matplotlib</span>
+  <span class="chip">10 lab lectures &middot; 10 assignments</span>
+  <span class="chip">Worked lecture programs and starter files</span>
+  <span class="chip hot">AI use permitted, prompts graded</span>
+</div>
+
+<h2>How the course is organised</h2>
+
+<div class="grid three">
+  <div class="card">
+    <span class="n">EACH SESSION</span>
+    <h3>The lab lecture</h3>
+    <p>A civil engineering problem, the method it forces you to build, one fully worked example carried through
+    by hand and by program, and the conditions under which the method fails.</p>
+  </div>
+  <div class="card">
+    <span class="n">EACH WEEK</span>
+    <h3>The assignment</h3>
+    <p>Four or five parts: implement, verify, apply, interpret. Data is seeded from your student number, so
+    every submission is individual.</p>
+  </div>
+  <div class="card">
+    <span class="n">EVERY SUBMISSION</span>
+    <h3>The AI Prompt Log</h3>
+    <p>A Word document recording every prompt used, word for word, with the checks you ran and the defects you
+    found. Worth 15–30 % of each assignment.</p>
+  </div>
+</div>
+
+<div class="callout key">
+  <span class="tag">Policy in one paragraph</span>
+  <p>Using an AI assistant is permitted throughout this course. Concealing that use is academic dishonesty. A
+  student who writes a precise prompt, tests the answer against an exact value, finds the defect and corrects it
+  will score higher than a student who produced the same code alone and documented nothing. The full policy and
+  the four-level prompt rubric are in the <a href="grading.html"><strong>grading system</strong></a>.</p>
+</div>
+
+<h2>Mapping to the lecture topics</h2>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Lecture topic</th><th>Lab lectures</th><th>Civil application</th></tr></thead>
+  <tbody>
+    <tr><td>Physical meaning of derivatives</td><td>1, 2, 3</td><td>Reservoir inflow from stage records; beam deflection sensitivity; section sizing by optimisation</td></tr>
+    <tr><td>Physical meaning of the integral</td><td>4, 5</td><td>Accumulated volumes from a rate record; river discharge, energy absorbed in a tensile test, vibration levels</td></tr>
+    <tr><td>Matrices</td><td>6, 7</td><td>Truss analysis; load combinations, seepage under a sheet-pile wall, survey conditioning</td></tr>
+    <tr><td>Infinite series</td><td>8</td><td>Terzaghi consolidation settlement</td></tr>
+    <tr><td>Taylor series</td><td>9, 10</td><td>Normal depth in an open channel; finite-difference analysis of a haunched deck</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Before you start</h2>
+
+<div class="callout key">
+  <span class="tag">Assignment 0 &mdash; complete this first</span>
+  <p>Install Python and Visual Studio Code, register the AI assistant and GitHub accounts you will need, and
+  verify that NumPy, SciPy and Matplotlib import correctly. It is pass or fail, and
+  <strong>Assignment 1 will not be accepted until it is passed</strong>.</p>
+  <p style="margin-top:10px">
+    <a href="lab-assignment-00.html"><strong>Open Lab Assignment 0 &rarr;</strong></a>
+  </p>
+</div>
+
+<h2>The ten laboratories</h2>
+
+<div class="grid two">
+
+  <div class="card">
+    <span class="n">LAB 1 &middot; DERIVATIVES</span>
+    <h3>The Derivative You Can Actually Measure</h3>
+    <p>Reservoir stage records, finite differences from data, and why noise destroys a derivative but not an
+    integral.</p>
+    <p style="margin-top:10px">
+      <a href="lab-lecture-01.html">Lab Lecture 1</a> &middot;
+      <a href="lab-assignment-01.html">Assignment 1</a>
+    </p>
+  </div>
+
+  <div class="card">
+    <span class="n">LAB 2 &middot; DERIVATIVES</span>
+    <h3>Sensitivity Analysis</h3>
+    <p>Which measurement deserves the budget? Partial derivatives, dimensionless sensitivity, error propagation
+    and a tornado chart on a beam deflection.</p>
+    <p style="margin-top:10px">
+      <a href="lab-lecture-02.html">Lab Lecture 2</a> &middot;
+      <a href="lab-assignment-02.html">Assignment 2</a>
+    </p>
+  </div>
+
+  <div class="card">
+    <span class="n">LAB 3 &middot; DERIVATIVES</span>
+    <h3>Gradient Descent</h3>
+    <p>Following the derivative downhill: step size, stability limits, narrow valleys, and fitting a creep model
+    to laboratory data.</p>
+    <p style="margin-top:10px">
+      <a href="lab-lecture-03.html">Lab Lecture 3</a> &middot;
+      <a href="lab-assignment-03.html">Assignment 3</a>
+    </p>
+  </div>
+
+  <div class="card">
+    <span class="n">LAB 4 &middot; INTEGRALS</span>
+    <h3>The Integral as Accumulation</h3>
+    <p>Trapezoid and Simpson, the error-ratio test that proves your implementation, and the round-off floor at
+    very fine subdivision.</p>
+    <p style="margin-top:10px">
+      <a href="lab-lecture-04.html">Lab Lecture 4</a> &middot;
+      <a href="lab-assignment-04.html">Assignment 4</a>
+    </p>
+  </div>
+
+  <div class="card">
+    <span class="n">LAB 5 &middot; INTEGRALS</span>
+    <h3>Integrals That Earn Their Keep</h3>
+    <p>River discharge from a gauging survey, work from a tensile test, RMS vibration, centroids — and choosing
+    the right integrand.</p>
+    <p style="margin-top:10px">
+      <a href="lab-lecture-05.html">Lab Lecture 5</a> &middot;
+      <a href="lab-assignment-05.html">Assignment 5</a>
+    </p>
+  </div>
+
+  <div class="card">
+    <span class="n">LAB 6 &middot; MATRICES</span>
+    <h3>The Matrix as a Machine</h3>
+    <p>Truss equilibrium as a linear system, Gauss elimination, and the small pivot that silently destroys a
+    structural analysis.</p>
+    <p style="margin-top:10px">
+      <a href="lab-lecture-06.html">Lab Lecture 6</a> &middot;
+      <a href="lab-assignment-06.html">Assignment 6</a>
+    </p>
+  </div>
+
+  <div class="card">
+    <span class="n">LAB 7 &middot; MATRICES</span>
+    <h3>Load Cases and Large Systems</h3>
+    <p>LU factorisation for repeated load combinations, Gauss–Seidel on a seepage grid, and the condition number
+    behind a small residual with a worthless answer.</p>
+    <p style="margin-top:10px">
+      <a href="lab-lecture-07.html">Lab Lecture 7</a> &middot;
+      <a href="lab-assignment-07.html">Assignment 7</a>
+    </p>
+  </div>
+
+  <div class="card">
+    <span class="n">LAB 8 &middot; SERIES</span>
+    <h3>Infinite Series and the Cost of Stopping</h3>
+    <p>Terzaghi's consolidation series, convergence that depends on where you evaluate, and cancellation in a
+    perfectly convergent sum.</p>
+    <p style="margin-top:10px">
+      <a href="lab-lecture-08.html">Lab Lecture 8</a> &middot;
+      <a href="lab-assignment-08.html">Assignment 8</a>
+    </p>
+  </div>
+
+  <div class="card">
+    <span class="n">LAB 9 &middot; TAYLOR</span>
+    <h3>Taylor Series and Normal Depth</h3>
+    <p>Where every difference formula comes from, the remainder term, and Newton–Raphson solving Manning's
+    equation in five iterations.</p>
+    <p style="margin-top:10px">
+      <a href="lab-lecture-09.html">Lab Lecture 9</a> &middot;
+      <a href="lab-assignment-09.html">Assignment 9</a>
+    </p>
+  </div>
+
+  <div class="card">
+    <span class="n">LAB 10 &middot; CAPSTONE</span>
+    <h3>One Beam, Every Method</h3>
+    <p>A haunched footbridge deck: integration for the moments, a matrix for the deflections, a convergence
+    study for the mesh, and sensitivity for the section depth.</p>
+    <p style="margin-top:10px">
+      <a href="lab-lecture-10.html">Lab Lecture 10</a> &middot;
+      <a href="lab-assignment-10.html">Assignment 10</a>
+    </p>
+  </div>
+
+</div>
+
+<h2>Course documents</h2>
+<div class="grid two">
+  <a class="card" href="grading.html">
+    <span class="n">POLICY</span>
+    <h3>Grading system, rubrics and AI policy</h3>
+    <p>Course weighting, the five rubric bands, the four-level AI prompt rubric with a worked marking example,
+    standing deductions and the bench-check procedure.</p>
+  </a>
+  <a class="card" href="setup.html">
+    <span class="n">SETUP</span>
+    <h3>Environment setup</h3>
+    <p>Python, NumPy and Matplotlib; capturing console output; and the list of library functions that may be
+    used only as cross-checks.</p>
+  </a>
+  <a class="card" href="AI-Prompt-Log-Template.docx">
+    <span class="n">TEMPLATE</span>
+    <h3>AI Prompt Log Template (.docx)</h3>
+    <p>Completed in Word and submitted with every assignment. One block per prompt, recorded word for word.</p>
+  </a>
+  <a class="card" href="Lab-Report-Template.docx">
+    <span class="n">TEMPLATE</span>
+    <h3>Lab Report Template (.docx)</h3>
+    <p>Objective, theory, method, results, verification, discussion, conclusion, code appendix.</p>
+  </a>
+</div>
+
+<h2>What a student can do at the end</h2>
+<ol class="steps">
+  <li>Take a civil engineering problem, write its governing equation, and identify the numerical method it
+  requires.</li>
+  <li>Implement that method from first principles rather than calling a library and hoping.</li>
+  <li>State the error in the answer and defend the step size, mesh or tolerance that produced it.</li>
+  <li>Predict where a method will fail before it fails on a project.</li>
+  <li>Direct an AI assistant precisely, verify what it returns, and correct it in writing.</li>
+</ol>
+
+<footer class="site">Numerical Methods Laboratory &middot; Civil Engineering &middot; Prepared by Engr. Escranda</footer>
+</div>
+</body>
+</html>

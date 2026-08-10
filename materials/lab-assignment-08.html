@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab Assignment 8 — Consolidation by Series Summation</title>
+<style>
+/* ============================================================
+   Numerical Methods Laboratory — shared stylesheet
+   White and blue. Code blocks remain dark. Print-friendly.
+   ============================================================ */
+
+:root {
+  --bg:        #ffffff;
+  --surface:   #ffffff;
+  --surface-2: #f2f6fb;
+  --surface-3: #e8f0f9;
+  --ink:       #10233a;
+  --ink-soft:  #3d5670;
+  --ink-faint: #6b8199;
+  --rule:      #d5e2f0;
+  --accent:    #0b5fa5;      /* primary blue */
+  --accent-dk: #08436f;
+  --accent-lt: #4a92d0;
+  --ok:        #14705c;
+  --warn:      #8a5b00;
+  --code-bg:   #0d1b2a;      /* black-blue: code stays dark */
+  --code-ink:  #e6edf5;
+  --shadow:    0 1px 2px rgba(16,35,58,.05), 0 6px 20px rgba(16,35,58,.07);
+  --mono: "Cascadia Code", "JetBrains Mono", Consolas, "SF Mono", Menlo, monospace;
+  --sans: "Segoe UI", Inter, system-ui, -apple-system, Roboto, sans-serif;
+  --serif: "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 24px 96px; }
+.wrap-wide { max-width: 1080px; margin: 0 auto; padding: 0 24px 96px; }
+
+/* ---------- masthead ---------- */
+.masthead {
+  border-bottom: 2px solid var(--accent);
+  background: var(--surface);
+  padding: 10px 0;
+  margin-bottom: 40px;
+}
+.masthead .wrap, .masthead .wrap-wide { padding-bottom: 0; }
+.crumbs {
+  font-size: 13px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-faint); display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+}
+.crumbs a { color: var(--accent); text-decoration: none; }
+.crumbs a:hover { text-decoration: underline; }
+
+/* ---------- titles ---------- */
+.eyebrow {
+  font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent); margin: 0 0 10px;
+}
+h1 {
+  font-family: var(--serif);
+  font-size: clamp(30px, 5vw, 43px);
+  line-height: 1.14; margin: 0 0 12px; letter-spacing: -.01em; font-weight: 700;
+  color: var(--ink);
+}
+h2 {
+  font-family: var(--serif);
+  font-size: clamp(23px, 3.2vw, 29px);
+  margin: 52px 0 14px; line-height: 1.2; color: var(--accent-dk);
+  padding-bottom: 8px; border-bottom: 1px solid var(--rule);
+}
+h3 { font-size: 19px; margin: 32px 0 10px; letter-spacing: -.005em; color: var(--ink); }
+h4 { font-size: 15px; margin: 24px 0 8px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .08em; }
+.lede { font-size: 19px; color: var(--ink-soft); line-height: 1.6; margin: 0 0 8px; }
+
+.meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 8px; }
+.chip {
+  font-size: 12.5px; font-weight: 600; letter-spacing: .04em;
+  padding: 4px 11px; border-radius: 3px;
+  background: var(--surface-2); color: var(--ink-soft); border: 1px solid var(--rule);
+}
+.chip.hot { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+hr.rule { border: 0; border-top: 1px solid var(--rule); margin: 44px 0; }
+
+/* ---------- narrative / case blocks ---------- */
+.story {
+  font-family: var(--serif);
+  font-size: 18.5px; line-height: 1.7;
+  background: var(--surface-2);
+  border-left: 3px solid var(--accent);
+  padding: 20px 24px; margin: 26px 0;
+  border-radius: 0 4px 4px 0;
+}
+.story p:first-child { margin-top: 0; }
+.story p:last-child { margin-bottom: 0; }
+.story .who {
+  font-family: var(--sans); font-size: 12.5px; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--accent); font-weight: 700; margin-bottom: 8px;
+}
+
+.callout {
+  border: 1px solid var(--rule); border-radius: 4px;
+  padding: 16px 20px; margin: 22px 0; background: var(--surface);
+}
+.callout .tag { font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+.callout.think { border-left: 3px solid var(--accent-lt); background: var(--surface-2); }
+.callout.think .tag { color: var(--accent); }
+.callout.trap { border-left: 3px solid var(--warn); }
+.callout.trap .tag { color: var(--warn); }
+.callout.key  { border-left: 3px solid var(--accent-dk); background: var(--surface-3); }
+.callout.key .tag { color: var(--accent-dk); }
+.callout p:first-of-type { margin-top: 0; }
+.callout p:last-child { margin-bottom: 0; }
+
+/* ---------- math ---------- */
+.math {
+  font-family: var(--serif); font-size: 20px; text-align: center;
+  padding: 18px 12px; margin: 20px 0; color: var(--ink);
+  background: var(--surface-2); border: 1px solid var(--rule);
+  border-radius: 4px; overflow-x: auto;
+}
+.frac { display: inline-block; vertical-align: middle; text-align: center; margin: 0 .25em; }
+.frac > span { display: block; padding: 0 .35em; }
+.frac .den { border-top: 1.5px solid currentColor; }
+.eqn-no { float: right; color: var(--ink-faint); font-family: var(--sans); font-size: 14px; }
+var, .v { font-family: var(--serif); font-style: italic; }
+
+/* ---------- code (stays dark) ---------- */
+pre {
+  background: var(--code-bg); color: var(--code-ink);
+  padding: 18px 20px; border-radius: 4px; overflow-x: auto;
+  font-family: var(--mono); font-size: 14px; line-height: 1.6;
+  margin: 18px 0; border: 1px solid #0a1622;
+}
+pre .c { color: #7e93a8; font-style: italic; }   /* comment  */
+pre .k { color: #7fb3ff; }                        /* keyword  */
+pre .s { color: #9fd39a; }                        /* string   */
+pre .n { color: #ffcf7a; }                        /* number   */
+pre .f { color: #8fd8ec; }                        /* function */
+code {
+  font-family: var(--mono); font-size: .9em;
+  background: var(--surface-2); padding: 2px 6px; border-radius: 3px;
+  border: 1px solid var(--rule); color: var(--accent-dk);
+}
+pre code { background: none; border: 0; padding: 0; font-size: inherit; color: inherit; }
+
+/* ---------- tables ---------- */
+table {
+  width: 100%; border-collapse: collapse; margin: 22px 0;
+  font-size: 15px; background: var(--surface);
+  border: 1px solid var(--rule);
+}
+th, td { padding: 10px 13px; text-align: left; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th {
+  background: var(--accent); color: #fff; font-size: 12.5px;
+  text-transform: uppercase; letter-spacing: .06em; font-weight: 700;
+}
+tbody tr:nth-child(even) { background: var(--surface-2); }
+tbody tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-family: var(--mono); font-size: 13.5px; }
+.table-scroll { overflow-x: auto; }
+
+/* ---------- lists ---------- */
+ul, ol { padding-left: 22px; }
+li { margin: 7px 0; }
+li::marker { color: var(--accent); }
+ol.steps { counter-reset: s; list-style: none; padding-left: 0; }
+ol.steps > li { counter-increment: s; position: relative; padding-left: 42px; margin: 16px 0; }
+ol.steps > li::before {
+  content: counter(s); position: absolute; left: 0; top: 1px;
+  width: 28px; height: 28px; border-radius: 3px;
+  background: var(--accent); color: #fff; font-weight: 700; font-size: 14px;
+  display: grid; place-items: center;
+}
+
+/* ---------- cards ---------- */
+.grid { display: grid; gap: 16px; margin: 24px 0; }
+.grid.two   { grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); }
+.grid.three { grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); }
+
+.card {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 4px;
+  border-top: 3px solid var(--accent);
+  padding: 18px 20px; box-shadow: var(--shadow);
+  text-decoration: none; color: inherit; display: block;
+}
+a.card:hover { border-color: var(--accent-lt); border-top-color: var(--accent-dk); background: var(--surface-2); }
+.card h3 { margin: 4px 0 6px; font-size: 17px; }
+.card p { margin: 0; font-size: 14.5px; color: var(--ink-soft); }
+.card .n { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 700; letter-spacing: .1em; }
+
+/* ---------- buttons ---------- */
+.btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 28px 0; }
+.btn {
+  display: inline-block; padding: 11px 20px; border-radius: 3px;
+  font-size: 15px; font-weight: 600; text-decoration: none;
+  background: var(--accent); color: #fff; border: 1px solid var(--accent);
+}
+.btn:hover { background: var(--accent-dk); border-color: var(--accent-dk); }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn.ghost:hover { background: var(--surface-2); color: var(--accent-dk); }
+
+/* ---------- checklist ---------- */
+.checklist { list-style: none; padding-left: 0; }
+.checklist li { padding-left: 30px; position: relative; }
+.checklist li::before {
+  content: ""; position: absolute; left: 0; top: 5px;
+  width: 15px; height: 15px; border: 2px solid var(--accent-lt); border-radius: 2px;
+}
+
+/* ---------- footer nav ---------- */
+.pagenav {
+  display: flex; justify-content: space-between; gap: 16px;
+  border-top: 1px solid var(--rule); margin-top: 56px; padding-top: 20px;
+  font-size: 15px;
+}
+.pagenav a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.pagenav a:hover { text-decoration: underline; }
+
+footer.site {
+  border-top: 1px solid var(--rule); margin-top: 40px; padding: 22px 0 60px;
+  color: var(--ink-faint); font-size: 13.5px; text-align: center;
+}
+
+a { color: var(--accent); }
+
+/* ---------- print ---------- */
+@media print {
+  :root { --surface-2:#f4f7fa; --shadow:none; }
+  body { font-size: 11pt; }
+  pre { background:#f2f5f8; color:#101c28; border:1px solid #c8d6e4; }
+  pre .c,pre .k,pre .s,pre .n,pre .f { color:#101c28; }
+  th { background:#e8f0f9; color:#10233a; }
+  .masthead, .pagenav, .btn-row { display: none; }
+  h2 { page-break-after: avoid; }
+  pre, table, .callout, .story { page-break-inside: avoid; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="wrap">
+    <div class="crumbs">
+      <a href="index.html">Numerical Methods</a> <span>/</span>
+      <a href="lab-lecture-08.html">Lab Lecture 8</a> <span>/</span>
+      <span>Assignment 8</span> <span>/</span>
+      <a href="grading.html">Grading</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<p class="eyebrow">Lab Assignment 8 &middot; 100 points</p>
+<h1>Consolidation by Series Summation</h1>
+<p class="lede">Sum Terzaghi's series properly, decide where to stop on evidence rather than habit, demonstrate
+subtractive cancellation on a series that converges perfectly well in theory, and deliver a settlement–time
+prediction an engineer could sign.</p>
+
+<div class="meta-row">
+  <span class="chip">Due: next laboratory session</span>
+  <span class="chip">Individual</span>
+  <span class="chip">Python 3</span>
+  <span class="chip hot">AI Prompt Log (Word) required</span>
+</div>
+
+<h2>Expected file deliverables</h2>
+<p>Submit one ZIP archive named <code>lab08_&lt;surname&gt;.zip</code> containing exactly these items:</p>
+<div class="table-scroll">
+<table>
+  <thead><tr><th>#</th><th>File name</th><th>Format</th><th>Contents</th></tr></thead>
+  <tbody>
+    <tr><td class="num">1</td><td><code>lab08_&lt;surname&gt;.py</code></td><td>.py</td><td>All code, runnable top to bottom.</td></tr>
+    <tr><td class="num">2</td><td><code>lab08_report_&lt;surname&gt;.pdf</code></td><td>.pdf</td><td><a href="Lab-Report-Template.docx">Lab Report Template</a>, maximum 6 pages.</td></tr>
+    <tr><td class="num">3</td><td><code>lab08_ai_prompts_&lt;surname&gt;.docx</code></td><td>.docx (Word)</td><td>Every prompt, word for word, in the <a href="AI-Prompt-Log-Template.docx">AI Prompt Log Template</a>.</td></tr>
+    <tr><td class="num">4</td><td><code>figures/</code></td><td>.png</td><td>Terms-versus-T plot, U–T curve, settlement–time curve, cancellation plot.</td></tr>
+    <tr><td class="num">5</td><td><code>lab08_output_&lt;surname&gt;.txt</code></td><td>.txt</td><td>Console output captured as the program ran.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<hr class="rule">
+
+<h2>Part A — The summation engine <span class="chip">30 pts</span></h2>
+
+<ol class="steps">
+  <li><strong>A.1</strong> Implement <code>consolidation_U(T, es, max_terms)</code> returning
+  <code>(U, terms_used, ea)</code>. It must stop on the approximate percent relative error, cap the term count,
+  and handle <span class="v">T</span> &le; 0 as a special case.</li>
+
+  <li><strong>A.2</strong> Reproduce the worked example: tabulate the term-by-term summation at
+  <span class="v">T</span> = 0.2 for <span class="v">m</span> = 0 to 3, with columns
+  <span class="v">M</span>, <span class="v">M</span><sup>2</sup>, term, running sum, <span class="v">U</span> and
+  &epsilon;<sub>a</sub>. Confirm <span class="v">U</span> = 0.5041.</li>
+
+  <li><strong>A.3</strong> Using the Scarborough criterion, state &epsilon;<sub>s</sub> for 3, 4, 5 and 6
+  significant figures. For each, tabulate the number of terms required at
+  <span class="v">T</span> = 0.001, 0.01, 0.05, 0.2, 0.5 and 1.0. Present as a 4&times;6 table.</li>
+
+  <li><strong>A.4</strong> Plot the number of terms required against <span class="v">T</span> on a semilog axis
+  for &epsilon;<sub>s</sub> corresponding to 6 significant figures. Explain the shape in two sentences, referring
+  to the exponent <span class="v">M</span><sup>2</sup><span class="v">T</span>.</li>
+
+  <li><strong>A.5</strong> Verify your routine against the published values <span class="v">U</span> = 0.5041 at
+  <span class="v">T</span> = 0.2 and <span class="v">U</span> = 0.9313 at <span class="v">T</span> = 1.0.
+  Report the agreement to as many figures as it holds.</li>
+</ol>
+
+<h2>Part B — A settlement prediction <span class="chip">25 pts</span></h2>
+
+<p>An embankment is founded on a 6.0 m clay layer, drained top and bottom, with
+<span class="v">c<sub>v</sub></span> = 2.4 m&sup2;/year. The final primary settlement is 185 mm. Recall
+<span class="v">T</span> = <span class="v">c<sub>v</sub>t</span>/<span class="v">H</span><sub>dr</sub><sup>2</sup>,
+and that with two-way drainage <span class="v">H</span><sub>dr</sub> is half the layer thickness.</p>
+
+<ol class="steps">
+  <li><strong>B.1</strong> State <span class="v">H</span><sub>dr</sub> and justify it in one sentence. This is
+  the most common error in the whole assignment; an answer using
+  <span class="v">H</span><sub>dr</sub> = 6.0 m is wrong by a factor of four in time.</li>
+
+  <li><strong>B.2</strong> Find <span class="v">T</span><sub>50</sub>, <span class="v">T</span><sub>90</sub> and
+  <span class="v">T</span><sub>95</sub> by solving <span class="v">U</span>(<span class="v">T</span>) = 0.50,
+  0.90 and 0.95. Use a bisection search on <span class="v">T</span>; state your bracket and tolerance. Compare
+  with the standard values 0.197, 0.848 and 1.129.</li>
+
+  <li><strong>B.3</strong> Convert each to a real time in months. Report how long until 90 % of the settlement
+  has occurred, to a defensible precision.</li>
+
+  <li><strong>B.4</strong> Plot settlement in millimetres against time in months from 0 to 60. Mark the 50 %,
+  90 % and 95 % points.</li>
+
+  <li><strong>B.5</strong> The coefficient of consolidation from laboratory tests is uncertain by a factor of
+  two either way, so take <span class="v">c<sub>v</sub></span> between 1.2 and 4.8 m&sup2;/year. Report the
+  range of the 90 % time. Then state, in two sentences, how many significant figures your answer to B.3 really
+  supports, and what that implies about summing the series to 10<sup>&minus;10</sup>.</li>
+</ol>
+
+<h2>Part C — When a convergent series fails <span class="chip">25 pts</span></h2>
+
+<ol class="steps">
+  <li><strong>C.1</strong> Implement <code>exp_series(x, n_terms)</code> returning the sum and the largest
+  single term encountered, using the recurrence term<sub>k</sub> = term<sub>k&minus;1</sub>&middot;<span class="v">x</span>/<span class="v">k</span>.
+  No factorials.</li>
+
+  <li><strong>C.2</strong> For <span class="v">x</span> = &minus;1, &minus;5, &minus;10, &minus;20 and
+  &minus;30, tabulate: the series result, <code>math.exp(x)</code>, the percent relative error, the largest term,
+  and the ratio of largest term to final answer.</li>
+
+  <li><strong>C.3</strong> Plot the percent relative error against the ratio in C.2 on log-log axes. Show that
+  the number of significant figures lost is approximately log<sub>10</sub> of that ratio.</li>
+
+  <li><strong>C.4</strong> Fix it by computing <span class="v">e</span><sup>|<span class="v">x</span>|</sup> and
+  taking the reciprocal. Report the before and after errors at <span class="v">x</span> = &minus;20, and the
+  number of significant figures recovered.</li>
+
+  <li><strong>C.5</strong> Determine machine epsilon with your own halving loop. Report the value, the implied
+  number of decimal digits, and the smallest tolerance it would be sensible to request in Part A.</li>
+</ol>
+
+<div class="callout trap">
+  <span class="tag">Where marks are lost</span>
+  <p>Stating that "the series diverges" for negative <span class="v">x</span>. It does not; it converges for
+  every real <span class="v">x</span>. The mathematics is sound and the <em>arithmetic</em> fails. Marks are for
+  naming the mechanism — subtractive cancellation — and quantifying it with the largest-term ratio.</p>
+</div>
+
+<h2>Part D — AI Prompt Log <span class="chip">20 pts</span></h2>
+
+<div class="callout key">
+  <span class="tag">Required prompt experiment — the fixed term count</span>
+  <p>Send this prompt, word for word:</p>
+  <pre style="margin:10px 0"><code>python function for terzaghi degree of consolidation U as a function of time factor T</code></pre>
+  <p>Then, in the log:</p>
+  <ol style="margin:8px 0 0">
+    <li>How many terms does the returned code sum? Is the count fixed, or driven by a convergence test? Quote
+    the loop.</li>
+    <li>Evaluate its function at <span class="v">T</span> = 0.001 and compare with your own converged value.
+    Report the error in percent. A fixed 10-term sum is typically wrong in the third figure there.</li>
+    <li>Check its definition of <span class="v">M</span>. A common error is
+    <span class="v">M</span> = &pi;(2<span class="v">m</span>+1)/2 written with the wrong index origin, so the
+    sum starts at <span class="v">m</span> = 1. Report what it used and the size of the resulting error.</li>
+    <li>Write an improved prompt requiring a convergence-based stop, a term cap, and the returned term count.
+    Compare the two answers.</li>
+    <li>Name one defect that remains in the improved answer.</li>
+  </ol>
+</div>
+
+<h2>Grade breakdown</h2>
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Component</th><th class="num">Pts</th><th>Full marks require</th></tr></thead>
+  <tbody>
+    <tr><td>A — Summation engine</td><td class="num">30</td><td>Convergence-based stop, worked example reproduced, terms-versus-T table and plot, published values matched.</td></tr>
+    <tr><td>B — Settlement</td><td class="num">25</td><td>Correct drainage path, three time factors by bisection, settlement curve, uncertainty range and honest significant figures.</td></tr>
+    <tr><td>C — Cancellation</td><td class="num">25</td><td>Largest-term ratio tabulated, digits-lost relationship demonstrated, reciprocal fix quantified, machine epsilon measured.</td></tr>
+    <tr><td>D — AI Prompt Log</td><td class="num">20</td><td>Fixed-term-count defect demonstrated numerically at small T, index-origin check, improved prompt compared.</td></tr>
+    <tr><td><strong>Total</strong></td><td class="num"><strong>100</strong></td><td>&minus;5 missing console output &middot; &minus;10 code that does not run &middot; &minus;10 per day late.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="pagenav">
+  <span><a href="lab-lecture-08.html">&larr; Lab Lecture 8</a></span>
+  <span><a href="lab-lecture-09.html">Lab Lecture 9 &rarr;</a></span>
+</div>
+
+<footer class="site">Numerical Methods Laboratory &middot; Lab Assignment 8 &middot; Prepared by Engr. Escranda</footer>
+</div>
+</body>
+</html>
