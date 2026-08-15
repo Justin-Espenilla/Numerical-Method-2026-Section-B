@@ -1,0 +1,19 @@
+PART B: Create AI assistant accounts
+	USED AI: Claude & ChatGPT
+	    Question given: What's the color of the sun?
+		Claude: The Sun is actually white — it emits light across essentially the whole visible spectrum, so if you were viewing it from space, it would appear white to your eyes. 
+		It looks yellow or orange from Earth's surface because our atmosphere scatters shorter wavelengths of light (blues and violets) more than longer ones, leaving more of the yellow-orange light to reach your eyes directly — especially near sunrise and sunset, when sunlight passes through more atmosphere and the effect is stronger.
+		ChatGPT: The Sun is essentially white.
+		Here's why people often think it's yellow or orange:
+		•	From space: The Sun emits light across the visible spectrum, and when all those colors are combined, it appears white.
+		•	From Earth's surface: Our atmosphere scatters shorter wavelengths (blue light) more strongly than longer wavelengths. This scattering makes the Sun often look yellow, especially when it's higher in the sky.
+		•	At sunrise and sunset: Sunlight travels through much more of the atmosphere, scattering away even more blue and green light. The remaining light appears orange or red.
+		So:
+		•	☀️ Actual color: White
+		•	🌤️ Usually seen from Earth: Yellowish
+		•	🌅 Near the horizon: Orange to red
+		Interestingly, astronauts viewing the Sun from space describe it as a brilliant white disk against the blackness of space.
+
+PART C: Create a GitHub account
+	https://github.com/cyriljamison/numerical-methods-lab.git
+
